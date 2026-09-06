@@ -152,6 +152,9 @@
   .nightTrack{height:12px;background:#2d3229;border-radius:99px;overflow:hidden;border:1px solid #3d4436}.nightFill{height:100%;width:0;background:#d8d0b8;border-radius:99px;transition:width .42s ease}
   .nightPct{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:#9aa390}.nightTrait{margin-top:12px;padding:8px 10px;border-radius:10px;background:#25261d;border:1px solid #5f5531;color:#ead080;font-size:12px;font-weight:850;display:none}
   .nightSummary{margin:10px 0;padding:10px;border-radius:11px;background:#20241d;border:1px solid #394033;font-size:12px;line-height:1.55}
+  .nightAck{display:none;width:100%;margin-top:15px;padding:12px 14px;border-radius:12px;border:1px solid #655c3d;background:#302c20;color:#f2db91;font-weight:950;cursor:pointer}
+  .nightOutcomeGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.nightOutcomeCol{padding:10px;border-radius:11px;background:#20241d;border:1px solid #394033}.nightOutcomeCol strong{display:block;margin-bottom:6px}.nightOutcomeCol small{display:block;color:#b8c0ad;line-height:1.55}.nightOutcomeCol.buff{border-color:#455d3f}.nightOutcomeCol.debuff{border-color:#65433f}
+  @media(max-width:520px){.nightOutcomeGrid{grid-template-columns:1fr}}
   .traitFlash{color:#efd477;font-weight:950}
   .firstBagPulse{animation:bagPulse 1s ease 2}@keyframes bagPulse{50%{box-shadow:0 0 0 6px rgba(217,173,67,.18)}}
   @media(max-width:740px){.secretGrid{grid-template-columns:1fr}.compactVitals{gap:5px}.vitalChip{font-size:11px;padding:6px 8px}}
@@ -162,7 +165,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.2.4</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.2.4.2</span></div>
     <div class="topbarTools">
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -342,11 +345,12 @@
     <div class="nightTrack"><div class="nightFill" id="nightFill"></div></div>
     <div class="nightPct"><span>状态指数</span><strong id="nightPct">0</strong></div>
     <div class="nightTrait" id="nightTrait"></div>
+    <button type="button" class="nightAck" id="nightProgressAck">知道了，看看今晚发生什么 →</button>
   </div>
 </div>
 
 <script>
-const VERSION = '0.2.4';
+const VERSION = '0.2.4.2';
 const SAVE_KEY = 'doomsdayWheel_v024_save';
 const TUTORIAL_KEY = 'doomsdayWheel_v024_tutorial_seen';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
@@ -609,9 +613,9 @@ function normalizeGame(g){
   g.campUnlocked=!!g.campUnlocked||(g.shelterClues||0)>=2;
   return g;
 }
-function save(){ if(game && game.started){game=normalizeGame(game);storageSet(SAVE_KEY,JSON.stringify(game));} }
+function save(){ if(game && game.started){game=normalizeGame(game);const snapshot={...game,nightResolving:false};storageSet(SAVE_KEY,JSON.stringify(snapshot));} }
 function clearSave(){ storageRemove(SAVE_KEY); }
-function loadSave(){ try{return normalizeGame(JSON.parse(storageGet(SAVE_KEY)||'null'))}catch(e){return null} }
+function loadSave(){ try{const g=normalizeGame(JSON.parse(storageGet(SAVE_KEY)||'null'));if(g)g.nightResolving=false;return g}catch(e){return null} }
 
 function log(text){ game.log.unshift({day:game.day,text}); game.log=game.log.slice(0,24); }
 function addAch(id,label){ if(!game.achievements.some(function(a){return a.id===id;})){game.achievements.push({id:id,label:label}); var global=[]; try{global=JSON.parse(storageGet(ACH_KEY)||'[]');}catch(e){global=[];} if(!global.some(function(a){return a.id===id;})){global.push({id:id,label:label});storageSet(ACH_KEY,JSON.stringify(global));} toast('🏆 '+label);}}
@@ -807,7 +811,8 @@ function renderGame(){
   shelterBtn.innerHTML=permanentShelterScore()>=3?'已加固到上限<small>防护已达到 ★★★</small>':`加固住所<small>${hasPossession('tape')?'可用胶带':(hasPossession('crowbar')&&!game.shelterCrowbarUsed?'可用撬棍':'需要胶带 / 撬棍')} · 1 ⚡</small>`;
   renderLocations(morningLocked);
   document.getElementById('restBtn').disabled=game.actions<=0||morningLocked;
-  document.getElementById('endDayBtn').disabled=morningLocked;
+  document.getElementById('endDayBtn').disabled=false;
+  document.getElementById('endDayBtn').classList.toggle('softLocked',morningLocked);
   document.getElementById('inventory').innerHTML=renderInventory();
   document.getElementById('storageTitle').textContent=storageName();
   document.getElementById('storage').innerHTML=renderStorage();
@@ -994,16 +999,24 @@ function renderSecretLocations(){
   }
   unknown.className='secretLoc';unknown.innerHTML=`<strong>？？？</strong><small>城市里似乎还有没被发现的地方。</small>`;
 }
+function campRelationLabel(v){return v>=2?'接纳':v===1?'认识':'陌生'}
+function showCampOutcome(title,beforeTrust,extra=''){
+  const after=game.campTrust||0,delta=after-beforeTrust;
+  const route=after>=2?'✅ 据点路线：已达到「接纳」门槛':after===1?'🧭 据点路线：关系已建立，还需要继续接触':'🧭 据点路线：暂未推进';
+  openEvent('👥',title,`据点关系：${campRelationLabel(beforeTrust)} → ${campRelationLabel(after)}${delta>0?`（+${delta}）`:''}\n${route}${extra?`\n\n${extra}`:''}`,[
+    {text:'知道了',desc:'返回地图。',fn:()=>{hideModal();renderGame();save();}}
+  ]);
+}
 function visitCamp(){
   if(!game.campUnlocked){toast(`👥 据点线索 ${game.shelterClues||0}/2`);return;}
   if(game.actions<=0){toast('⚡ 今天没有行动力了');return;}
   if(game.day>1&&!game.morningDone){toast('🌅 先处理今天早上的事件');return;}
   game.actions--;
   const social=game.trait==='social';
-  openEvent('👥','幸存者据点',`你终于能把传闻和地图上的位置对应起来。入口有人守着，里面有灯，也有人在交换物资。\\n\\n当前关系：${game.campTrust>=2?'接纳':game.campTrust===1?'认识':'陌生'}。`,[
-    {text:social?'🤝【社交达人】主动跟守门人聊':'先跟守门人聊聊',desc:social?'你的天赋会让这次互动更稳定。':'建立关系，为终局据点路线做准备。',fn:()=>{if(social||chance(.62)){game.campTrust=Math.min(3,(game.campTrust||0)+1);if(social)traitTrigger('你明显更容易让据点的人记住并信任你。');else log('你和据点的人建立了一点联系。');game.morale=Math.min(100,game.morale+5);}else{game.morale=Math.max(0,game.morale-4);log('这次交流有点僵。至少没人赶你走。');}hideModal();renderGame();save();}},
-    {text:'用一份食物换消息',desc:'消耗一份随身食物，提高据点关系。',fn:()=>{const f=['crackers','grain','canned','egg'].find(hasItem);if(f){removeItem(f,1);game.campTrust=Math.min(3,(game.campTrust||0)+1);log(`你用${items[f].name}换了据点的信任和一些消息。`);}else toast('随身没有可交换的食物');hideModal();renderGame();save();}},
-    {text:'今天只看看',fn:()=>{log('你记住了据点的入口，没有急着把自己交给陌生人。');hideModal();renderGame();save();}}
+  openEvent('👥','幸存者据点',`你终于能把传闻和地图上的位置对应起来。入口有人守着，里面有灯，也有人在交换物资。\n\n当前关系：${campRelationLabel(game.campTrust||0)}。\n每次有效互动都会明确告诉你有没有推进「据点路线」。`,[
+    {text:social?'🤝【社交达人】主动跟守门人聊':'先跟守门人聊聊',desc:social?'你的天赋会让这次互动更稳定。':'建立关系，为终局据点路线做准备。',fn:()=>{const before=game.campTrust||0;if(social||chance(.62)){game.campTrust=Math.min(3,before+1);if(social)traitTrigger('你明显更容易让据点的人记住并信任你。');else log('你和据点的人建立了一点联系。');game.morale=Math.min(100,game.morale+5);showCampOutcome('这次交流有进展',before,'🙂 士气 +5');}else{game.morale=Math.max(0,game.morale-4);log('这次交流有点僵。至少没人赶你走。');showCampOutcome('这次没聊进去',before,'🙂 士气 -4，但据点仍然保留在地图上。');}}},
+    {text:'用一份食物换消息',desc:'消耗一份随身食物，提高据点关系。',fn:()=>{const before=game.campTrust||0;const f=['crackers','grain','canned','egg'].find(hasItem);if(f){removeItem(f,1);game.campTrust=Math.min(3,before+1);log(`你用${items[f].name}换了据点的信任和一些消息。`);showCampOutcome('交换成功',before,`🎒 ${items[f].name} -1`);}else{showCampOutcome('你翻了半天背包',before,'没有可交换的随身食物，所以关系没有变化。');}}},
+    {text:'今天只看看',fn:()=>{const before=game.campTrust||0;log('你记住了据点的入口，没有急着把自己交给陌生人。');showCampOutcome('你先观察了一圈',before,'没有增益，也没有损失。你至少知道下次还能回来。');}}
   ]);
 }
 
@@ -1824,9 +1837,14 @@ function nightIdentityLine(){
     mouse:'检查墙角存粮和所有能钻进去的缝……'
   }[game.identity]||'检查今晚的生存条件……';
 }
+let nightRuntimeActive=false;
+let nightStartSnapshot=null;
+function nightSnapshot(){
+  return {hp:game.hp,food:game.food,water:game.water,morale:game.morale,campTrust:game.campTrust||0,shelterClues:game.shelterClues||0,reputation:game.reputation||0,inventory:{...(game.inventory||{})},storage:{...(game.storage||{})}};
+}
 function showNightProgress(done){
-  const overlay=document.getElementById('nightOverlay'),fill=document.getElementById('nightFill'),line=document.getElementById('nightLine'),pct=document.getElementById('nightPct'),trait=document.getElementById('nightTrait');
-  overlay.classList.add('show');fill.style.width='0%';pct.textContent='0';trait.style.display='none';
+  const overlay=document.getElementById('nightOverlay'),fill=document.getElementById('nightFill'),line=document.getElementById('nightLine'),pct=document.getElementById('nightPct'),trait=document.getElementById('nightTrait'),ack=document.getElementById('nightProgressAck');
+  overlay.classList.add('show');fill.style.width='0%';pct.textContent='0';trait.style.display='none';ack.style.display='none';ack.onclick=null;
   const ni=nightIndex();
   const lines=['🏠 检查住所完整度……','🎒 翻找今天带回来的破烂……',nightIdentityLine(),`✨ 检查天赋【${traitData().short}】今天有没有上班……`,'☠️ 确认阎王有没有刷新你的页面……'];
   let i=0;
@@ -1834,7 +1852,14 @@ function showNightProgress(done){
     const target=Math.min(96,18+i*19);fill.style.width=target+'%';pct.textContent=target;line.textContent=lines[Math.min(i,lines.length-1)];
     if(i===3){trait.style.display='block';trait.textContent=`【${traitData().short}】已纳入今晚判定`; }
     i++;
-    if(i>=lines.length){clearInterval(timer);setTimeout(()=>{fill.style.width=ni.score+'%';pct.textContent=ni.score;line.innerHTML=`判定完成：<strong>${ni.label}</strong>`;setTimeout(()=>{overlay.classList.remove('show');done(ni);},650);},350);}
+    if(i>=lines.length){
+      clearInterval(timer);
+      setTimeout(()=>{
+        fill.style.width=ni.score+'%';pct.textContent=ni.score;line.innerHTML=`判定完成：<strong>${ni.label}</strong><br><small>不会自动跳过，先看清楚再继续。</small>`;
+        ack.style.display='block';
+        ack.onclick=()=>{ack.style.display='none';overlay.classList.remove('show');done(ni);};
+      },350);
+    }
   },360);
 }
 function applyNightConsumption(){
@@ -1851,6 +1876,39 @@ function applyNightConsumption(){
   if(game.food<=20){game.hp-=game.food<=0?24:12;game.lastDamage=makeDeathInfo('饥饿与体力衰竭',['可立即食用的食物'],'在结束今天之前补充食物，会直接改变这个结果。','夜间消耗后，你已经没有足够食物维持体力。');}
   if(game.water<=20){game.hp-=game.water<=0?40:20;game.lastDamage=makeDeathInfo('严重脱水',['饮用水'],'结束今天前把水分拉回安全区，会比赌夜间判定可靠。','夜间消耗后，水分已经降到危险水平。');}
   if(game.food>45&&game.water>45)game.morale+=2;
+}
+function itemDeltaLines(before,after){
+  const out=[]; const keys=new Set([...Object.keys(before||{}),...Object.keys(after||{})]);
+  keys.forEach(id=>{const d=(after?.[id]||0)-(before?.[id]||0);if(!d)return;const n=items[id]?.name||id;out.push({d,text:`${n} ${d>0?'+':''}${d}`});});
+  return out;
+}
+function nightOutcomeFrom(start){
+  const buffs=[],debuffs=[];
+  const add=(d,label)=>{if(!d)return;(d>0?buffs:debuffs).push(`${label} ${d>0?'+':''}${d}`)};
+  add(game.hp-start.hp,'❤️ 生命'); add(game.food-start.food,'🍞 饱食'); add(game.water-start.water,'💧 水分'); add(game.morale-start.morale,'🙂 士气');
+  const ct=(game.campTrust||0)-start.campTrust;if(ct>0)buffs.push(`👥 据点关系 +${ct}`);else if(ct<0)debuffs.push(`👥 据点关系 ${ct}`);
+  const sc=(game.shelterClues||0)-start.shelterClues;if(sc>0)buffs.push(`📡 据点线索 +${sc}`);
+  const rp=(game.reputation||0)-start.reputation;if(rp) (rp>0?buffs:debuffs).push(`🤝 声誉 ${rp>0?'+':''}${rp}`);
+  [...itemDeltaLines(start.inventory,game.inventory),...itemDeltaLines(start.storage,game.storage)].forEach(x=>(x.d>0?buffs:debuffs).push(`🎒 ${x.text}`));
+  return {buffs:[...new Set(buffs)],debuffs:[...new Set(debuffs)]};
+}
+function showNightOutcome(){
+  const start=nightStartSnapshot||nightSnapshot(); const out=nightOutcomeFrom(start);
+  const buffHtml=out.buffs.length?out.buffs.map(x=>`<small>✓ ${x}</small>`).join(''):'<small>今晚没有额外增益。</small>';
+  const debuffHtml=out.debuffs.length?out.debuffs.map(x=>`<small>• ${x}</small>`).join(''):'<small>今晚没有额外损失。</small>';
+  const c=document.getElementById('modalCard');
+  c.innerHTML=`<div class="modalIcon">🌙</div><h2>今晚结算完成</h2><p>先把这一晚发生了什么看清楚。点「知道了」以后才会进入第二天。</p><div class="nightOutcomeGrid"><div class="nightOutcomeCol buff"><strong>✨ BUFF / 收获</strong>${buffHtml}</div><div class="nightOutcomeCol debuff"><strong>⚠️ DEBUFF / 代价</strong>${debuffHtml}</div></div><div class="choiceList"><button type="button" class="choice" id="nightOutcomeAck">知道了 → 天亮</button></div>`;
+  document.getElementById('nightOutcomeAck').onclick=completeNightEvent;
+  showModal();
+}
+function completeNightEvent(){
+  hideModal();
+  game.hp=clamp(game.hp);game.food=clamp(game.food);game.water=clamp(game.water);game.morale=clamp(game.morale);
+  const ni=nightIndex();game.nightlyHistory.unshift({day:game.day,score:ni.score,label:ni.label});game.nightlyHistory=game.nightlyHistory.slice(0,10);
+  log(`🌙 DAY ${game.day} 夜间判定：${ni.score} · ${ni.label}。`);
+  game.nightResolving=false;nightRuntimeActive=false;nightStartSnapshot=null;save();
+  if(checkEnding())return;
+  advanceDay();
 }
 function startNightEvent(ni){
   const summary=`🌙 今夜状态：${ni.label}（状态指数 ${ni.score}）\\n${ni.parts.slice(0,5).join(' · ')}\\n\\n这不是“死亡概率”，而是你今晚整体准备度。`;
@@ -1892,13 +1950,7 @@ function startNightEvent(ni){
   ]);
 }
 function finishNightEvent(){
-  hideModal();
-  game.hp=clamp(game.hp);game.food=clamp(game.food);game.water=clamp(game.water);game.morale=clamp(game.morale);
-  const ni=nightIndex();game.nightlyHistory.unshift({day:game.day,score:ni.score,label:ni.label});game.nightlyHistory=game.nightlyHistory.slice(0,10);
-  log(`🌙 DAY ${game.day} 夜间判定：${ni.score} · ${ni.label}。`);
-  game.nightResolving=false;save();
-  if(checkEnding())return;
-  advanceDay();
+  showNightOutcome();
 }
 function advanceDay(){
   const beforeDayMap=mapSnapshot();
@@ -1912,9 +1964,12 @@ function advanceDay(){
   setTimeout(triggerDayOpening,140);
 }
 function endDay(){
-  if(game.day>1&&!game.morningDone){toast('🌅 先处理今天早上的事件');return;}
-  if(game.nightResolving)return;
-  game.nightResolving=true;applyNightConsumption();renderGame();save();
+  if(game.day>1&&!game.morningDone){toast('🌅 先处理今天早上的事件，处理完才能入夜');return;}
+  if(nightRuntimeActive){toast('🌙 今晚正在结算中，先处理屏幕上的夜间内容');return;}
+  // 存档里残留的 nightResolving 不再拥有锁死按钮的权力；真正的流程只认本页运行时状态。
+  if(game.nightResolving){game.nightResolving=false;save();}
+  nightRuntimeActive=true;game.nightResolving=true;nightStartSnapshot=nightSnapshot();
+  applyNightConsumption();renderGame();save();
   showNightProgress(startNightEvent);
 }
 
