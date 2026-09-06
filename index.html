@@ -165,7 +165,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.2.4.2</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.2.4.3</span></div>
     <div class="topbarTools">
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -350,7 +350,7 @@
 </div>
 
 <script>
-const VERSION = '0.2.4.2';
+const VERSION = '0.2.4.3';
 const SAVE_KEY = 'doomsdayWheel_v024_save';
 const TUTORIAL_KEY = 'doomsdayWheel_v024_tutorial_seen';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
@@ -1471,7 +1471,22 @@ function triggerSearchDanger(loc){
     const veryBad=(failedSearch?.depth||1)>=3||getLocationState(loc).tier==='red';
     openEvent(meta[0],meta[1],meta[2],[{text:'马上撤',desc:'速度、警觉和运气都会影响你能不能完整出去。',fn:()=>{let p=.54+(game.trait==='runner'?.16:0)+(game.trait==='alert'?.10:0)+(game.trait==='lucky'?.10:0)+(game.identity==='cat'?.10:0)+(game.identity==='crow'?.08:0);if(rand()<p){game.morale-=6;log(`你从${locationDefs[loc].name}及时撤了出来。东西没拿到，命还在。`);hideModal();renderGame();}else if(veryBad&&game.hp<=48){fatalExploration('贪心到此为止',`你知道这里危险，也知道里面可能有好东西。最后两件事都是真的。`,`${locationDefs[loc].name}高风险搜索致命外伤`,{trauma:true,missing:['更早撤离'],context:`你在${locationDefs[loc].name}已经深入到高风险区域，撤退失败并受到致命外伤。`});}else{const dmg=veryBad?38:26;game.hp-=dmg;game.morale-=10;game.injury=Math.max(game.injury,veryBad?2:1);game.lastDamage=makeDeathInfo(`${locationDefs[loc].name}搜索重伤`,['急救包或高级急救包','更早撤离'],`随身高级急救包可以在部分致命外伤里救你一次。`,`你在${locationDefs[loc].name}撤退失败，留下了严重伤势。`);log(`你在${locationDefs[loc].name}的搜索出了大问题。生命 -${dmg}，并留下伤势。`);hideModal();renderGame();checkEnding();}}}]);return;
   }
-  game.hp-=22;game.morale-=8;game.injury=Math.max(game.injury,1);game.lastDamage=makeDeathInfo('搜索意外重伤',['急救包或高级急救包'],'随身医疗物资能提高这类外伤后的生存机会。','你在搜索物资时出了严重意外。');log('搜物资时出了意外。生命 -22，并留下了伤。');renderGame();checkEnding();
+  const hpBefore=game.hp, moraleBefore=game.morale;
+  game.hp-=22;game.morale-=8;game.injury=Math.max(game.injury,1);
+  game.lastDamage=makeDeathInfo('搜索意外重伤',['急救包或高级急救包'],'随身医疗物资能提高这类外伤后的生存机会。','你在搜索物资时出了严重意外。');
+  log('搜物资时出了意外。生命 -22，并留下了伤。');
+  renderGame();
+  if(checkEnding())return;
+  openEvent('💥','深入搜索出了意外',`你往里面走的时候出了岔子。东西没拿到，还留下了伤。
+
+❤️ 生命 ${clamp(hpBefore)} → ${clamp(game.hp)}（-22）
+🙂 士气 ${clamp(moraleBefore)} → ${clamp(game.morale)}（-8）
+🤕 当前状态：受伤
+⚡ 本次行动力已消耗
+
+这不是“按钮没反应”——这次搜索失败了，而且代价已经结算。`,[
+    {text:'知道了，先撤回去',desc:'返回地图。伤势会继续影响后续探索风险。',fn:()=>{hideModal();renderGame();save();}}
+  ]);
 }
 
 function dropRandomItem(){ const ids=Object.keys(game.inventory); if(!ids.length)return; removeItem(pick(ids),1); }
