@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>末日转盘 V0.1.1 iPhone兼容版</title>
+<style>
+  :root{
+    --bg:#11130f;
+    --panel:#1a1d17;
+    --panel2:#22261e;
+    --paper:#e9dfc8;
+    --ink:#1e211b;
+    --muted:#9ea58f;
+    --accent:#d9ad43;
+    --danger:#bd4f45;
+    --good:#6f9a62;
+    --line:#343a2e;
+    --white:#f5f2e8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at top,#23271f 0,#11130f 55%);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh}
+  button{font:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .app{max-width:960px;margin:0 auto;padding:18px 14px 70px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+  .brand{font-weight:900;letter-spacing:.04em}.version{font-size:12px;color:#111;background:var(--accent);padding:4px 8px;border-radius:999px;margin-left:8px}
+  .ghost{background:transparent;border:1px solid var(--line);color:var(--muted);padding:9px 12px;border-radius:10px;cursor:pointer}
+  .screen{display:none}.screen.active{display:block}
+  .hero{padding:42px 22px 26px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,rgba(233,223,200,.08),rgba(255,255,255,.01));box-shadow:0 25px 70px rgba(0,0,0,.25)}
+  .kicker{color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+  h1{font-size:clamp(38px,8vw,72px);line-height:.95;margin:13px 0 16px}
+  .hero p{max-width:650px;color:#c7cbbd;line-height:1.8}
+  .quote{margin:26px 0;padding:18px 20px;border-left:4px solid var(--accent);background:rgba(217,173,67,.08);font-weight:800}
+  .primary{border:none;background:var(--accent);color:#181a15;font-weight:900;padding:14px 20px;border-radius:13px;cursor:pointer;box-shadow:0 8px 24px rgba(217,173,67,.18)}
+  .primary:disabled{opacity:.45;cursor:not-allowed}
+  .dangerBtn{border:none;background:var(--danger);color:white;font-weight:800;padding:12px 16px;border-radius:12px;cursor:pointer}
+  .secondary{border:1px solid #4a5141;background:#272c23;color:var(--white);font-weight:800;padding:12px 16px;border-radius:12px;cursor:pointer}
+  .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .card{border:1px solid var(--line);background:rgba(26,29,23,.94);border-radius:18px;padding:18px}
+  .step-title{font-size:13px;color:var(--accent);font-weight:800}.big-result{font-size:30px;font-weight:900;margin:8px 0}.desc{color:#b8bead;line-height:1.65}
+  .wheelWrap{display:flex;flex-direction:column;align-items:center;gap:15px}
+  .wheelBox{position:relative;width:min(76vw,330px);aspect-ratio:1}
+  .pointer{position:absolute;left:50%;top:-5px;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:29px solid var(--accent);z-index:3;filter:drop-shadow(0 4px 3px rgba(0,0,0,.35))}
+  .wheel{width:100%;height:100%;border-radius:50%;border:9px solid #dad0b8;box-shadow:0 0 0 5px #5c5c4e,0 20px 45px rgba(0,0,0,.35);position:relative;transition:transform 2.2s cubic-bezier(.12,.76,.18,1);overflow:hidden}
+  .wheel:after{content:"";position:absolute;width:25%;height:25%;border-radius:50%;background:#171914;border:5px solid #e9dfc8;left:37.5%;top:37.5%;z-index:2}
+  .wheelLabels{position:absolute;inset:0;pointer-events:none;z-index:1}
+  .wheelLabel{position:absolute;left:50%;top:50%;transform-origin:0 0;font-weight:900;text-shadow:0 1px 2px #000;font-size:14px;width:110px;text-align:center}
+  .summary{display:grid;gap:10px}.summaryRow{display:flex;justify-content:space-between;border-bottom:1px dashed #3e4437;padding:10px 0}.summaryRow span:first-child{color:var(--muted)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{padding:11px 10px;border-radius:13px;background:var(--panel2);border:1px solid var(--line)}.statLabel{font-size:12px;color:var(--muted)}.statValue{font-weight:900;font-size:20px;margin-top:3px}.bar{height:6px;background:#34382f;border-radius:99px;margin-top:7px;overflow:hidden}.bar>i{display:block;height:100%;background:#d7d1bd;width:50%;border-radius:99px;transition:width .25s}
+  .gameHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.day{font-size:28px;font-weight:900}.identityBadge{padding:7px 11px;border-radius:999px;background:#262b22;border:1px solid #424a3b;color:#d9dfcd}
+  .gameGrid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.mainPanel,.sidePanel{border:1px solid var(--line);background:rgba(26,29,23,.96);border-radius:18px;padding:16px}
+  .actionsHeader{display:flex;justify-content:space-between;align-items:center}.ap{color:var(--accent);font-weight:900}.locationGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}.location{padding:14px 8px;border-radius:13px;background:#252a21;border:1px solid #3d4436;color:var(--white);cursor:pointer;min-height:90px}.location:hover{border-color:#7b846c}.location:disabled{opacity:.4;cursor:not-allowed}.location strong{display:block;font-size:16px;margin-bottom:5px}.location small{color:#aeb6a3;line-height:1.4}
+  .log{background:#11130f;border:1px solid #2e3329;border-radius:13px;padding:13px;min-height:160px;max-height:250px;overflow:auto;line-height:1.65;font-size:14px}.logItem{padding:8px 0;border-bottom:1px dashed #292d25}.logItem:last-child{border-bottom:none}.logDay{color:var(--accent);font-size:12px;font-weight:800}
+  .sideTitle{font-size:13px;color:var(--muted);font-weight:800;letter-spacing:.08em;margin:0 0 10px}.inventory{display:grid;gap:7px}.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;background:#242820;border-radius:10px;border:1px solid #343a2e}.itemName{font-size:14px}.itemBtns{display:flex;gap:5px}.mini{font-size:12px;padding:5px 7px;border-radius:7px;border:1px solid #4a5141;background:#30362b;color:white;cursor:pointer}.muted{color:var(--muted)}
+  .endDay{width:100%;margin-top:12px}.statusline{padding:11px 12px;margin-bottom:12px;border:1px dashed #4b5144;border-radius:11px;color:#cbd1c1;background:#20241d}
+  .modal{display:none;position:fixed;inset:0;background:rgba(5,6,5,.78);z-index:20;align-items:center;justify-content:center;padding:16px}.modal.show{display:flex}.modalCard{width:min(620px,100%);max-height:88vh;overflow:auto;background:#1b1e18;border:1px solid #505849;border-radius:20px;padding:20px;box-shadow:0 30px 80px rgba(0,0,0,.5)}.modalIcon{font-size:46px}.modalCard h2{font-size:28px;margin:6px 0 10px}.modalCard p{color:#c5cbb9;line-height:1.75;white-space:pre-line}.choiceList{display:grid;gap:9px;margin-top:16px}.choice{padding:13px 14px;text-align:left;background:#292e25;border:1px solid #444c3c;color:white;border-radius:12px;cursor:pointer}.choice:hover{border-color:var(--accent)}.choice small{display:block;color:#aeb5a3;margin-top:4px}
+  .lootGrid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.lootTag{padding:8px 10px;background:#2d3228;border:1px solid #474e3f;border-radius:999px}.risk{color:#e1877d;font-weight:800}
+  .ending{padding:24px;border-radius:18px;background:var(--paper);color:var(--ink);box-shadow:0 25px 65px rgba(0,0,0,.25)}.ending h2{font-size:34px;margin:6px 0}.report{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin:18px 0}.report div{padding:8px 0;border-bottom:1px dashed #aaa08a}.endingQuote{font-size:21px;font-weight:900;line-height:1.5;padding:16px 0}.achievement{display:inline-block;background:#20231d;color:#f1e6cc;border-radius:999px;padding:8px 11px;margin:4px;font-size:13px}
+  .debugBox{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#0f110e;padding:12px;border-radius:10px;color:#c8d0bd;max-height:420px;overflow:auto}
+  .toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%) translateY(20px);background:#eee5d0;color:#1c2019;padding:10px 14px;border-radius:999px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .tinyNote{font-size:12px;color:#7f8875;margin-top:10px;line-height:1.55}
+  .runtimeNotice{margin-top:14px;padding:11px 13px;border-radius:11px;font-size:13px;line-height:1.55}.runtimeNotice.blocked{background:rgba(189,79,69,.13);border:1px solid rgba(189,79,69,.55);color:#f1b8b2}.runtimeNotice.ready{background:rgba(111,154,98,.13);border:1px solid rgba(111,154,98,.5);color:#c8e1c1}
+  @media(max-width:740px){.setup-grid,.gameGrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.locationGrid{grid-template-columns:1fr 1fr}.report{grid-template-columns:1fr}.hero{padding:32px 18px}.sidePanel{order:2}.wheelBox{width:min(82vw,320px)}}
+</style>
+</head>
+<body>
+<noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">末日转盘 <span class="version">V0.1.1 iPhone</span></div>
+    <div>
+      <button type="button" class="ghost" id="debugTop">调试</button>
+      <button type="button" class="ghost" id="resetTop">重置</button>
+    </div>
+  </div>
+
+  <section id="home" class="screen active">
+    <div class="hero">
+      <div class="kicker">Doomsday Wheel / Prototype</div>
+      <h1>你能活<br/>几天？</h1>
+      <p>身份、天赋和出生地交给命运。末日之后，你只需要做一件事：想办法别死得太离谱。</p>
+      <div class="quote">命运负责转，活法由你选。</div>
+      <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
+      <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
+      <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
+      <div class="tinyNote">V0.1.1：针对 iPhone / 本地文件环境强化兼容；开放人类 / 鸡、3 个搜索地点、随机物资、贪心搜索、身份事件、隐藏结局与调试状态。</div>
+    </div>
+  </section>
+
+  <section id="setup" class="screen">
+    <div class="setup-grid">
+      <div class="card wheelWrap">
+        <div style="text-align:center">
+          <div class="step-title" id="setupStep">STEP 1 / 3</div>
+          <div class="big-result" id="wheelQuestion">你是谁？</div>
+        </div>
+        <div class="wheelBox">
+          <div class="pointer"></div>
+          <div id="wheel" class="wheel"></div>
+          <div id="wheelLabels" class="wheelLabels"></div>
+        </div>
+        <button type="button" class="primary" id="spinBtn">转动命运</button>
+      </div>
+      <div class="card">
+        <div class="step-title">本局档案</div>
+        <div class="summary" id="setupSummary"></div>
+        <div id="setupFlavor" class="desc" style="margin-top:16px">先转一下。别紧张，最差也就是成为鸡。</div>
+        <button type="button" class="primary" id="enterGameBtn" style="width:100%;margin-top:18px;display:none">进入末日</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="gameHeader">
+      <div><div class="day">DAY <span id="dayNum">1</span></div><div class="muted" id="disasterText">社会秩序崩溃</div></div>
+      <div class="identityBadge" id="identityBadge">👤 人类 · 幸运儿</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="statLabel">❤️ 生命</div><div class="statValue" id="hpVal">100</div><div class="bar"><i id="hpBar"></i></div></div>
+      <div class="stat"><div class="statLabel">🍖 饱食</div><div class="statValue" id="foodVal">80</div><div class="bar"><i id="foodBar"></i></div></div>
+      <div class="stat"><div class="statLabel">💧 水分</div><div class="statValue" id="waterVal">80</div><div class="bar"><i id="waterBar"></i></div></div>
+      <div class="stat"><div class="statLabel">🧠 士气</div><div class="statValue" id="moraleVal">70</div><div class="bar"><i id="moraleBar"></i></div></div>
+    </div>
+    <div id="statusline" class="statusline">今天还能行动 2 次。</div>
+    <div class="gameGrid">
+      <div class="mainPanel">
+        <div class="actionsHeader"><strong>今天去哪？</strong><span class="ap">⚡ <span id="apVal">2</span>/2</span></div>
+        <div class="locationGrid">
+          <button type="button" class="location" data-loc="supermarket"><strong>🛒 超市</strong><small>物资最多，也最容易遇到人。</small></button>
+          <button type="button" class="location" data-loc="store"><strong>🏪 便利店</strong><small>收益一般，但相对稳妥。</small></button>
+          <button type="button" class="location" data-loc="farm"><strong>🌾 农场</strong><small>谷物、水源与鸡的命运交汇处。</small></button>
+        </div>
+        <button type="button" class="secondary endDay" id="restBtn">休息一下（消耗 1 行动力）</button>
+        <button type="button" class="primary endDay" id="endDayBtn">结束今天 →</button>
+        <h3 style="margin:22px 0 8px">末日日记</h3>
+        <div class="log" id="log"></div>
+      </div>
+      <div class="sidePanel">
+        <div class="sideTitle">背包 / 携带物</div>
+        <div id="inventory" class="inventory"></div>
+        <div class="tinyNote" id="capacityText"></div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:18px 0"/>
+        <div class="sideTitle">本局状态</div>
+        <div class="summary" id="gameSummary"></div>
+        <div id="specialStatus" class="tinyNote"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ending" class="screen">
+    <div class="ending">
+      <div style="font-size:12px;font-weight:900;letter-spacing:.15em">末日生存报告</div>
+      <h2 id="endingTitle">结局</h2>
+      <div class="report" id="report"></div>
+      <div class="endingQuote" id="endingQuote"></div>
+      <div id="achievementList"></div>
+      <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="primary" id="againBtn">再活一次 🎡</button>
+        <button type="button" class="secondary" id="copyReportBtn">复制报告</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="modal" class="modal"><div class="modalCard" id="modalCard"></div></div>
+<div id="toast" class="toast">已复制</div>
+
+<script>
+const VERSION = '0.1.1';
+const SAVE_KEY = 'doomsdayWheel_v011_save';
+const ACH_KEY = 'doomsdayWheel_v011_ach';
+
+const identities = [
+  {id:'human', label:'👤 人类', short:'人类', color:'#8f6a45', desc:'工具、背包、谈判。你能做很多事，也因此很容易把自己作死。', cap:8, foodUse:15, waterUse:20},
+  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:2, foodUse:8, waterUse:10}
+];
+const traits = [
+  {id:'lucky', label:'🍀 幸运儿', short:'幸运儿', desc:'风险判定 +12%。'},
+  {id:'social', label:'🤝 社交达人', short:'社交达人', desc:'涉及其他生物时，更容易获得善意结果。'},
+  {id:'smallappetite', label:'🥣 胃口小', short:'胃口小', desc:'每日饱食消耗减少 25%。'},
+  {id:'runner', label:'💨 飞毛腿', short:'飞毛腿', desc:'逃跑、撤退类判定 +18%。'},
+  {id:'curious', label:'👁️ 好奇心', short:'好奇心', desc:'稀有事件更容易出现，但贪心危险也更高。'},
+  {id:'unlucky', label:'☁️ 倒霉蛋', short:'倒霉蛋', desc:'危险事件更容易找上门。'}
+];
+const births = [
+  {id:'apartment', label:'🏢 普通公寓', short:'普通公寓', desc:'安全中等，留下了一点初始物资。'},
+  {id:'farm', label:'🌾 农场', short:'农场', desc:'食物潜力不错，但你并不是这里唯一会饿的生物。'},
+  {id:'supermarket', label:'🛒 超市', short:'超市', desc:'物资很多。人，也很多。'}
+];
+
+const items = {
+  water:{name:'饮用水', icon:'💧', size:1, usable:true, use:(s)=>{s.water=Math.min(100,s.water+35);return '喝掉一瓶水，水分 +35。';}},
+  crackers:{name:'饼干', icon:'🍪', size:1, usable:true, use:(s)=>{s.food=Math.min(100,s.food+24);return '吃掉饼干，饱食 +24。';}},
+  grain:{name:'谷物', icon:'🌾', size:1, usable:true, use:(s)=>{s.food=Math.min(100,s.food+(s.identity==='chicken'?32:16));return s.identity==='chicken'?'啄了一阵谷物。非常专业。饱食 +32。':'吃了点干巴巴的谷物，饱食 +16。';}},
+  canned:{name:'罐头', icon:'🥫', size:1, usable:true, use:(s)=>{if(s.identity==='human' && !hasItem('opener')) return '你盯着罐头。罐头也盯着你。没有开罐器。'; if(s.identity==='chicken') return '你是一只鸡。你对金属罐头暂时没有解决方案。'; s.food=Math.min(100,s.food+42);return '打开罐头，饱食 +42。';}},
+  opener:{name:'开罐器', icon:'🔧', size:1, usable:false},
+  medkit:{name:'急救包', icon:'🩹', size:1, usable:true, use:(s)=>{s.hp=Math.min(100,s.hp+35);return '处理了一下伤口，生命 +35。';}},
+  tape:{name:'胶带', icon:'🧻', size:1, usable:false},
+  candles:{name:'生日蜡烛', icon:'🕯️', size:1, usable:false},
+  soap:{name:'洗洁精', icon:'🧴', size:1, usable:false},
+  egg:{name:'鸡蛋', icon:'🥚', size:1, usable:true, use:(s)=>{s.food=Math.min(100,s.food+22);return s.identity==='chicken'?'……你选择吃掉了自己的蛋。末日没有伦理课。饱食 +22。':'吃掉鸡蛋，饱食 +22。';}}
+};
+
+const locationDefs = {
+  supermarket:{name:'超市', icon:'🛒', baseRisk:.23, pool:['water','water','canned','crackers','opener','tape','candles','soap','medkit']},
+  store:{name:'便利店', icon:'🏪', baseRisk:.10, pool:['water','crackers','crackers','candles','soap','canned']},
+  farm:{name:'农场', icon:'🌾', baseRisk:.14, pool:['grain','grain','water','egg','tape']}
+};
+
+let game = null;
+let setupStage = 0;
+let wheelRotation = 0;
+let wheelLocked = false;
+let currentWheelOptions = [];
+let pendingSearch = null;
+
+function defaultGame(){
+  return {
+    version:VERSION, day:1, actions:2, maxActions:2, identity:null, trait:null, birth:null, disaster:'社会秩序崩溃',
+    hp:100, food:82, water:82, morale:72, inventory:{}, log:[], flags:{}, achievements:[],
+    searches:0, greedySearches:0, reputation:0, chickenValue:35, eggsLaid:0, lastEggDay:0,
+    dangerFaced:0, bestLoot:'无', ending:null, started:false
+  };
+}
+
+function rand(){ return Math.random(); }
+function pick(arr){ return arr[Math.floor(rand()*arr.length)]; }
+function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
+function chance(base){
+  let p=base;
+  if(game && game.trait==='lucky') p+=.12;
+  if(game && game.trait==='unlucky') p-=.10;
+  if(game && game.trait==='runner' && pendingSearch && pendingSearch.dangerCheck) p+=.18;
+  return rand()<Math.max(.03,Math.min(.95,p));
+}
+function byId(arr,id){return arr.find(x=>x.id===id)}
+function idData(){return byId(identities,game.identity)}
+function traitData(){return byId(traits,game.trait)}
+function birthData(){return byId(births,game.birth)}
+function hasItem(id){return (game.inventory[id]||0)>0}
+function inventorySlots(){return Object.entries(game.inventory).reduce((n,[id,q])=>n+(items[id]?.size||1)*q,0)}
+function canAdd(id,q=1){return inventorySlots()+(items[id]?.size||1)*q <= idData().cap}
+
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function toast(text='已复制'){ const t=document.getElementById('toast');t.textContent=text;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1300); }
+function storageGet(key){ try{return window.localStorage ? window.localStorage.getItem(key) : null;}catch(e){return null;} }
+function storageSet(key,val){ try{if(window.localStorage){window.localStorage.setItem(key,val);return true;}}catch(e){} return false; }
+function storageRemove(key){ try{if(window.localStorage)window.localStorage.removeItem(key);}catch(e){} }
+function save(){ if(game && game.started) storageSet(SAVE_KEY,JSON.stringify(game)); }
+function clearSave(){ storageRemove(SAVE_KEY); }
+function loadSave(){ try{return JSON.parse(storageGet(SAVE_KEY)||'null')}catch(e){return null} }
+
+function log(text){ game.log.unshift({day:game.day,text}); game.log=game.log.slice(0,24); }
+function addAch(id,label){ if(!game.achievements.some(function(a){return a.id===id;})){game.achievements.push({id:id,label:label}); var global=[]; try{global=JSON.parse(storageGet(ACH_KEY)||'[]');}catch(e){global=[];} if(!global.some(function(a){return a.id===id;})){global.push({id:id,label:label});storageSet(ACH_KEY,JSON.stringify(global));} toast('🏆 '+label);}}
+function addItem(id,q=1){
+  let added=0;
+  for(let i=0;i<q;i++){
+    if(canAdd(id,1)){ game.inventory[id]=(game.inventory[id]||0)+1; added++; }
+  }
+  return added;
+}
+function removeItem(id,q=1){ game.inventory[id]=Math.max(0,(game.inventory[id]||0)-q); if(game.inventory[id]===0) delete game.inventory[id]; }
+
+function initHome(){ document.getElementById('continueBtn').style.display=loadSave()?'inline-block':'none'; }
+
+function newGame(){ game=defaultGame(); setupStage=0; setupNext(); showScreen('setup'); }
+function setupNext(){
+  const configs=[
+    {question:'你是谁？',options:identities},
+    {question:'命运给你什么天赋？',options:traits},
+    {question:'你从哪里开始？',options:births}
+  ];
+  const cfg=configs[setupStage];
+  if(!cfg){ document.getElementById('spinBtn').style.display='none'; document.getElementById('enterGameBtn').style.display='block'; return; }
+  document.getElementById('setupStep').textContent=`STEP ${setupStage+1} / 3`;
+  document.getElementById('wheelQuestion').textContent=cfg.question;
+  document.getElementById('spinBtn').textContent='转动命运';
+  document.getElementById('spinBtn').setAttribute('data-mode','spin');
+  document.getElementById('spinBtn').disabled=false;
+  document.getElementById('spinBtn').style.display='inline-block';
+  currentWheelOptions=cfg.options;
+  renderWheel(cfg.options);
+  renderSetupSummary();
+}
+
+function renderWheel(opts){
+  const colors=['#80623f','#86544c','#5b7148','#4f6870','#7a654d','#67604a','#6f4f58','#48645d'];
+  const seg=360/opts.length;
+  const gradients=opts.map((_,i)=>`${colors[i%colors.length]} ${i*seg}deg ${(i+1)*seg}deg`).join(',');
+  const w=document.getElementById('wheel'); w.style.background=`conic-gradient(${gradients})`;
+  const labels=document.getElementById('wheelLabels'); labels.innerHTML='';
+  opts.forEach((o,i)=>{
+    const d=document.createElement('div');d.className='wheelLabel';
+    const angle=(i+.5)*seg-90;
+    const r=112;
+    const x=Math.cos(angle*Math.PI/180)*r;
+    const y=Math.sin(angle*Math.PI/180)*r;
+    d.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${angle+90}deg)`;
+    d.textContent=o.label;
+    labels.appendChild(d);
+  });
+}
+
+function spinSetup(){
+  if(wheelLocked) return; wheelLocked=true; document.getElementById('spinBtn').disabled=true;
+  const idx=Math.floor(rand()*currentWheelOptions.length); const seg=360/currentWheelOptions.length;
+  const target=360-(idx+.5)*seg; wheelRotation += 1440 + target - (wheelRotation%360);
+  document.getElementById('wheel').style.transform=`rotate(${wheelRotation}deg)`;
+  setTimeout(()=>{
+    const result=currentWheelOptions[idx];
+    if(setupStage===0) game.identity=result.id;
+    if(setupStage===1) game.trait=result.id;
+    if(setupStage===2) game.birth=result.id;
+    document.getElementById('setupFlavor').innerHTML=`<strong>${result.label}</strong><br>${result.desc}`;
+    renderSetupSummary();
+    setupStage++; wheelLocked=false;
+    document.getElementById('spinBtn').disabled=false;
+    if(setupStage<3){document.getElementById('spinBtn').textContent='下一项 →';document.getElementById('spinBtn').setAttribute('data-mode','next');}
+    else {document.getElementById('spinBtn').style.display='none';document.getElementById('enterGameBtn').style.display='block';}
+  },2250);
+}
+
+function renderSetupSummary(){
+  const el=document.getElementById('setupSummary');
+  const rows=[['身份',game.identity?byId(identities,game.identity).label:'？'],['天赋',game.trait?byId(traits,game.trait).label:'？'],['出生地',game.birth?byId(births,game.birth).label:'？'],['末日','⚠️ 社会秩序崩溃']];
+  el.innerHTML=rows.map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
+}
+
+function startGame(){
+  if(!game.identity||!game.trait||!game.birth) return;
+  game.started=true;
+  if(game.birth==='apartment'){addItem('water',1);addItem('crackers',1);}
+  if(game.birth==='farm'){addItem('grain',2);}
+  if(game.birth==='supermarket'){addItem('water',1);addItem('canned',1); game.morale-=5;}
+  if(game.identity==='chicken'){ game.food=88; game.water=88; game.morale=68; }
+  log(`末日开始。你是一${game.identity==='chicken'?'只':'个'}${idData().short}，出生在${birthData().short}。`);
+  if(game.identity==='chicken' && game.trait==='social') log('你是一只社交达人鸡。至少暂时比社交达人蟑螂好一点。');
+  save(); renderGame(); showScreen('game');
+}
+
+function renderGame(){
+  if(!game) return;
+  game.hp=clamp(game.hp); game.food=clamp(game.food); game.water=clamp(game.water); game.morale=clamp(game.morale);
+  document.getElementById('dayNum').textContent=game.day;
+  document.getElementById('identityBadge').textContent=`${idData().label} · ${traitData().short}`;
+  document.getElementById('hpVal').textContent=game.hp;document.getElementById('foodVal').textContent=game.food;document.getElementById('waterVal').textContent=game.water;document.getElementById('moraleVal').textContent=game.morale;
+  ['hp','food','water','morale'].forEach(k=>document.getElementById(k+'Bar').style.width=game[k]+'%');
+  document.getElementById('apVal').textContent=game.actions;
+  document.getElementById('statusline').textContent=game.actions>0?`今天还能行动 ${game.actions} 次。${game.trait==='curious'?' 你的好奇心正在鼓励你做一些不太理智的事。':''}`:'今天的行动力用完了。最好别再折腾。';
+  document.querySelectorAll('.location').forEach(b=>b.disabled=game.actions<=0);
+  document.getElementById('restBtn').disabled=game.actions<=0;
+  document.getElementById('inventory').innerHTML=renderInventory();
+  bindInventoryButtons();
+  document.getElementById('capacityText').textContent=`携带空间：${inventorySlots()} / ${idData().cap} 格`;
+  document.getElementById('log').innerHTML=game.log.length?game.log.map(x=>`<div class="logItem"><div class="logDay">DAY ${x.day}</div>${x.text}</div>`).join(''):'<span class="muted">还没有记录。</span>';
+  document.getElementById('gameSummary').innerHTML=[['出生地',birthData().short],['天赋',traitData().short],['搜索次数',game.searches],['贪心次数',game.greedySearches]].map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
+  document.getElementById('specialStatus').textContent=game.identity==='chicken'?`🐔 活鸡价值：${game.chickenValue}/100 · 已下蛋：${game.eggsLaid}`:`👤 人际声誉：${game.reputation>=0?'+':''}${game.reputation}`;
+  save();
+}
+
+function renderInventory(){
+  const ents=Object.entries(game.inventory);
+  if(!ents.length) return '<div class="muted">空空如也。末日很有参与感。</div>';
+  return ents.map(([id,q])=>{
+    const it=items[id];
+    return `<div class="item"><span class="itemName">${it.icon} ${it.name} ×${q}</span><span class="itemBtns">${it.usable?`<button type="button" class="mini useItemBtn" data-item="${id}">使用</button>`:''}</span></div>`;
+  }).join('');
+}
+function bindInventoryButtons(){
+  document.querySelectorAll('.useItemBtn').forEach(function(b){b.addEventListener('click',function(){useItem(b.getAttribute('data-item'));});});
+}
+
+function useItem(id){
+  if(!hasItem(id))return; const it=items[id]; if(!it?.usable)return;
+  const before=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
+  const msg=it.use(game);
+  const after=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
+  if(before!==after) removeItem(id,1);
+  log(msg); renderGame();
+}
+
+function locationStatus(loc){
+  const options = loc==='supermarket' ? [
+    ['货架还剩不少东西',-.05,2],['已经被抢过一轮',0,1],['一片狼藉',.08,1],['几乎搬空',-.02,1],['有人正在里面抢物资',.18,2],['后仓门居然没锁',.10,3]
+  ] : loc==='store' ? [
+    ['卷帘门半开着',0,1],['店里安静得过分',.04,2],['有人刚离开',.08,2],['货架还算完整',-.04,2]
+  ] : [
+    ['谷仓还完整',-.03,2],['院子里有脚印',.08,2],['水槽还有水',-.05,2],['远处传来动物叫声',.10,2]
+  ];
+  return pick(options);
+}
+
+function searchLocation(loc){
+  if(game.actions<=0)return;
+  game.actions--; game.searches++;
+  const def=locationDefs[loc]; const st=locationStatus(loc);
+  pendingSearch={loc,depth:1,risk:Math.max(.02,def.baseRisk+st[1]),status:st[0],rolls:st[2],dangerCheck:true};
+  doLootRoll(false);
+}
+
+function lootBatch(loc,rolls){
+  const pool=locationDefs[loc].pool; const result={};
+  for(let i=0;i<rolls;i++){const id=pick(pool); result[id]=(result[id]||0)+1;}
+  return result;
+}
+
+function doLootRoll(isGreedy){
+  const ps=pendingSearch; if(!ps)return;
+  if(isGreedy){ps.depth++; game.greedySearches++; ps.risk += .20 + (game.trait==='curious'?.05:0);}
+  const dangerProb=Math.min(.86,ps.risk + (ps.depth-1)*.08 + (game.trait==='unlucky'?.08:0));
+  const loot=lootBatch(ps.loc, ps.rolls + (isGreedy?1:0));
+  let lootText=''; let accepted={};
+  Object.entries(loot).forEach(([id,q])=>{const a=addItem(id,q); if(a)accepted[id]=a;});
+  const lootTags=Object.entries(accepted).map(([id,q])=>`<span class="lootTag">${items[id].icon} ${items[id].name} ×${q}</span>`).join('') || '<span class="lootTag">背包装不下了 😑</span>';
+  const riskPct=Math.round(dangerProb*100);
+  const modal=document.getElementById('modalCard');
+  modal.innerHTML=`<div class="modalIcon">${locationDefs[ps.loc].icon}</div><h2>${locationDefs[ps.loc].name} · ${ps.status}</h2><p>你翻了一圈，能带走的东西是：</p><div class="lootGrid">${lootTags}</div><p class="risk">如果继续搜，当前危险大约 ${riskPct}%。</p><div class="choiceList"><button type="button" class="choice" id="leaveSearchBtn">见好就收<small>带着现在的东西回去。</small></button><button type="button" class="choice" id="greedySearchBtn">再搏一把 🎡<small>多转一次物资，但危险会继续上涨。</small></button></div>`;
+  document.getElementById('leaveSearchBtn').addEventListener('click',leaveSearch);
+  document.getElementById('greedySearchBtn').addEventListener('click',greedySearch);
+  showModal();
+}
+
+function greedySearch(){
+  hideModal(); const ps=pendingSearch;
+  const dangerProb=Math.min(.92, ps.risk + .20 + (ps.depth-1)*.08 + (game.trait==='curious'?.05:0) + (game.trait==='unlucky'?.08:0));
+  game.dangerFaced++;
+  const survives = chance(1-dangerProb);
+  if(!survives){ triggerSearchDanger(ps.loc); return; }
+  ps.risk+=.20; ps.depth++; game.greedySearches++;
+  log(`你在${locationDefs[ps.loc].name}决定再搜一次。居然还活着。`);
+  doLootRoll(false);
+}
+
+function leaveSearch(){
+  hideModal();
+  const ps=pendingSearch;
+  log(`你从${locationDefs[ps.loc].name}撤了回来。至少这次没把命搭进去。`);
+  if(game.greedySearches>=5) addAch('justlook','《我就看看》 连续对贪心说了很多次“就一次”。');
+  pendingSearch=null; randomPostSearchEvent(); renderGame(); checkEnding();
+}
+
+function triggerSearchDanger(loc){
+  pendingSearch=null;
+  if(loc==='supermarket' && game.identity==='chicken'){
+    openEvent('👁️🍗','有人看见了你',`你正准备从货架旁撤退，一个饿得眼睛发直的幸存者也看见了你。\n\n你突然意识到：在他的物资分类里，你可能不属于“玩家”。`,[
+      {text:'扑腾着跑！',desc:'进行逃跑判定。',fn:()=>{let p=.48+(game.trait==='runner'?.18:0)+(game.trait==='lucky'?.12:0); if(rand()<p){game.morale-=8;log('你扑腾出一条鸡生通道，成功逃走。');hideModal();renderGame();}else{finish('今晚加餐','你逃过了货架、抢购和末日，没有逃过别人的晚饭。','被幸存者抓住');}}}
+    ]); return;
+  }
+  if(loc==='supermarket' && game.identity==='human'){
+    openEvent('🏃','抢购冲突',`你抱着刚找到的东西往外走时，人群突然挤成一团。有人伸手拽你的背包。`,[
+      {text:'丢下一件东西跑',desc:'保命要紧。',fn:()=>{dropRandomItem();game.morale-=5;log('你丢下一件东西冲出了超市。');hideModal();renderGame();}},
+      {text:'硬扛',desc:'有机会保住物资，也可能受伤。',fn:()=>{if(chance(.52)){game.reputation-=5;log('你硬是挤了出来，东西没丢。');hideModal();renderGame();}else{game.hp-=28;game.morale-=12;log('你在冲突里受了伤。生命 -28。');hideModal();renderGame();checkEnding();}}}
+    ]);return;
+  }
+  if(loc==='farm'){
+    openEvent('🐕','院子里的影子',`你刚搜完东西，一只饥饿的野狗从谷仓后面冲了出来。`,[
+      {text:'逃！',desc:'速度和运气都会影响结果。',fn:()=>{let p=.52+(game.trait==='runner'?.18:0)+(game.trait==='lucky'?.12:0); if(rand()<p){game.morale-=5;log('你成功甩掉了野狗。');hideModal();renderGame();}else if(game.identity==='chicken'){finish('鸡生止步','野外生存有很多风险，而你刚好是很多风险的食谱。','被野狗叼走');}else{game.hp-=32;log('你被咬伤了。生命 -32。');hideModal();renderGame();checkEnding();}}}
+    ]);return;
+  }
+  game.hp-=22;game.morale-=8;log('搜物资时出了意外。生命 -22。');renderGame();checkEnding();
+}
+
+function dropRandomItem(){ const ids=Object.keys(game.inventory); if(!ids.length)return; removeItem(pick(ids),1); }
+
+function randomPostSearchEvent(){
+  if(game.identity==='chicken' && game.birth!=='farm' && rand()<.10){game.chickenValue+=8;log('有人远远看见你，居然没有追。你在人类社会的“活鸡价值” +8。');}
+  if(game.identity==='human' && rand()<.08){game.reputation+=5;log('回来的路上你顺手帮了一个受伤的人，人际声誉 +5。');}
+}
+
+function rest(){
+  if(game.actions<=0)return;game.actions--;game.morale+=12;game.hp+=5;log('你决定不折腾，安静休息了一会儿。士气 +12，生命 +5。');renderGame();
+}
+
+function endDay(){
+  // Chicken egg system
+  if(game.identity==='chicken' && game.day-game.lastEggDay>=3 && game.food>=50 && game.water>=40 && rand()<.55){
+    if(addItem('egg',1)){game.eggsLaid++;game.lastEggDay=game.day;game.chickenValue+=8;log('你下了一颗蛋。鸡生生产力 +1。');}
+  }
+  const d=idData(); let foodUse=d.foodUse, waterUse=d.waterUse;
+  if(game.trait==='smallappetite') foodUse=Math.round(foodUse*.75);
+  game.food-=foodUse;game.water-=waterUse;
+  if(game.food<=20)game.hp-=game.food<=0?15:8;
+  if(game.water<=20)game.hp-=game.water<=0?25:12;
+  if(game.food>45 && game.water>45)game.morale+=2;
+  game.day++;
+  if(game.day>1) nightlyEvent();
+  if(game.ending)return;
+  game.actions=2;
+  log(`天亮了。你活到了第 ${game.day} 天。`);
+  renderGame();checkEnding();
+}
+
+const nightlyEvents = [
+  ()=>commonKnock(),
+  ()=>waterPipe(),
+  ()=>quietNight(),
+  ()=>abandonedBag(),
+  ()=>coldNight(),
+  ()=>shelterRumor(),
+  ()=>candleEvent(),
+  ()=>identityNightEvent()
+];
+function nightlyEvent(){
+  if(rand()<.72) pick(nightlyEvents)();
+}
+function openEvent(icon,title,text,choices){
+  const c=document.getElementById('modalCard');
+  c.innerHTML=`<div class="modalIcon">${icon}</div><h2>${title}</h2><p>${text}</p><div class="choiceList">${choices.map((x,i)=>`<button type="button" class="choice" data-choice="${i}">${x.text}${x.desc?`<small>${x.desc}</small>`:''}</button>`).join('')}</div>`;
+  c.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>choices[+b.dataset.choice].fn());
+  showModal();
+}
+function showModal(){document.getElementById('modal').classList.add('show')}
+function hideModal(){document.getElementById('modal').classList.remove('show')}
+
+function commonKnock(){
+  openEvent('🚪','门外有人',`夜里有人敲门。敲得很轻。\n“有人吗？我只想要一点水。”`,[
+    {text:'不回应',desc:'最安全。',fn:()=>{game.morale-=3;log('你没有回应门外的人。夜重新安静下来。');hideModal();renderGame();}},
+    {text:game.identity==='human'?'隔着门谈谈':'躲起来观察',desc:'可能得到信息，也可能惹上麻烦。',fn:()=>{if(game.trait==='social'||chance(.55)){if(game.identity==='human'){game.reputation+=8;log('你和对方交换了几句话，还得到了一条避难所线索。声誉 +8。');game.flags.shelterClue=true;}else{game.chickenValue+=5;log('对方发现了你，却只是笑了一下就走了。活鸡价值 +5。');}hideModal();renderGame();}else{game.morale-=8;log('这次互动让你很不安。士气 -8。');hideModal();renderGame();}}}
+  ]);
+}
+function waterPipe(){
+  game.water=Math.min(100,game.water+18);log('半夜水管漏了一阵。末日里，漏水居然算好消息。水分 +18。');renderGame();
+}
+function quietNight(){game.morale+=6;log('今晚什么都没发生。你第一次觉得“无事发生”是一种奖励。士气 +6。');renderGame();}
+function abandonedBag(){
+  openEvent('🎒','路边的背包',`你发现一个没人看守的背包。拉链没有完全拉上。`,[
+    {text:'打开看看',fn:()=>{if(chance(.68)){const id=pick(['water','crackers','medkit','tape']);addItem(id,1);log(`背包里有：${items[id].name}。`);}else{game.morale-=6;log('里面什么都没有，只有一张没用的收据。');}hideModal();renderGame();}},
+    {text:'别碰',fn:()=>{log('你没有碰那个背包。今天你决定尊重自己的求生直觉。');hideModal();renderGame();}}
+  ]);
+}
+function coldNight(){game.morale-=6;game.hp-=5;log('夜里突然降温，你睡得很差。生命 -5，士气 -6。');renderGame();checkEnding();}
+function candleEvent(){
+  if(!hasItem('candles')){quietNight();return;}
+  openEvent('🕯️','停电后的微光',`整片区域彻底黑了。\n你突然想起背包里那堆当初看起来毫无意义的生日蜡烛。`,[
+    {text:'点起来',fn:()=>{removeItem('candles',1);game.morale+=16;addAch('birthday','《生日快乐》 末日里，生日蜡烛真的派上了用场。');log('一根生日蜡烛照亮了房间。气氛荒唐，但士气 +16。');hideModal();renderGame();}},
+    {text:'省着',fn:()=>{log('你决定继续摸黑。蜡烛留着以后再过生日。');hideModal();renderGame();}}
+  ]);
+}
+function shelterRumor(){
+  game.flags.shelterClue=true;log('你听说附近有人建立了临时避难所。这个消息可能是真的。');renderGame();
+}
+function identityNightEvent(){
+  if(game.identity==='chicken') chickenEvent(); else humanEvent();
+}
+function humanEvent(){
+  openEvent('👤','陌生幸存者',`一个疲惫的幸存者想用一瓶水换你的一份食物。`,[
+    {text:'交易',fn:()=>{if(hasItem('crackers')){removeItem('crackers');addItem('water');game.reputation+=6;log('交易完成。对方记住了你的脸。声誉 +6。');}else{log('你翻遍背包，发现自己根本没有能交易的饼干。场面有点尴尬。');}hideModal();renderGame();}},
+    {text:'拒绝',fn:()=>{log('你拒绝了交易。对方没说什么。');hideModal();renderGame();}}
+  ]);
+}
+function chickenEvent(){
+  if(game.flags.shelterClue && rand()<.35){ chickenShelterEvent(); return; }
+  openEvent('🐔','有人在看你',`远处一个人盯着你看了几秒。\n你无法判断那是喜欢小动物的眼神，还是晚饭前的眼神。`,[
+    {text:'友好地咕一下',fn:()=>{if(game.trait==='social'||chance(.55)){game.chickenValue+=12;log('你用惊人的鸡际交往能力获得了好感。活鸡价值 +12。');}else{game.morale-=5;log('对方靠近了一步。你立刻跑了。');}hideModal();renderGame();}},
+    {text:'立刻躲',fn:()=>{log('你决定今天不参加跨物种社交。');hideModal();renderGame();}}
+  ]);
+}
+function chickenShelterEvent(){
+  openEvent('🏚️','人类避难所',`你终于找到了传闻中的人类避难所。里面有灯、有水，还有锅。\n\n最后一个细节让你产生了一点复杂情绪。`,[
+    {text:'进去',desc:'也许这里很安全。也许。',fn:()=>resolveChickenShelter()},
+    {text:'转身就走',desc:'鸡的直觉有时候值得尊重。',fn:()=>{addAch('smartchicken','《识时务者为俊鸡》 在避难所门口选择了自由。');game.flags.refusedShelter=true;game.morale+=10;log('你在距离安全区十米的地方转身走了。没人理解，但你很安心。');hideModal();renderGame();}}
+  ]);
+}
+function resolveChickenShelter(){
+  hideModal();
+  const foodCrisis=rand()<.45;
+  const score=game.chickenValue+(game.trait==='social'?15:0)+(game.eggsLaid*4);
+  if(score>=72){finish('避难所吉祥物','一个小孩给你起了名字。从此每次有人提议“要不把鸡炖了”，都会被全体瞪回去。','稳定生存');return;}
+  if(score>=45 && !foodCrisis){finish('生产资料','你拥有了独立鸡窝。代价是：鸡蛋从此需要按时上交。','稳定生存');return;}
+  addAch('dinner','《今晚加餐》 你成功抵达了人类避难所。');
+  finish('今晚加餐','你逃过了整个末日的一部分，没有逃过晚饭。','避难所食物短缺');
+}
+
+function checkEnding(){
+  if(game.ending)return true;
+  if(game.hp<=0){finish('到此为止','你已经没有力气继续了。末日没有给你第二条命，但按钮会。','生命归零');return true;}
+  if(game.day>=15){
+    if(game.identity==='human' && game.reputation>=20){finish('临时社区','你和几名幸存者建立了一个勉强能运转的小社区。至少现在，大家愿意一起活。','V0.1 Demo 稳定结局');}
+    else if(game.identity==='chicken' && game.chickenValue>=65){finish('鸡生赢家','你成功找到了稳定食物和一个没有立刻想吃你的地方。对于一只鸡来说，已经非常优秀。','V0.1 Demo 稳定结局');}
+    else finish('活过测试期','你活过了 V0.1 的 15 天测试期。开发组暂时还没写更多灾难来折磨你。','Demo 达成');
+    return true;
+  }
+  return false;
+}
+
+function finish(title,quote,cause){
+  game.ending={title,quote,cause,day:game.day}; clearSave();
+  document.getElementById('endingTitle').textContent=title;
+  const report=[['身份',idData().label],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['搜索次数',game.searches],['贪心次数',game.greedySearches],['最终原因',cause]];
+  document.getElementById('report').innerHTML=report.map(r=>`<div><span style="color:#776e5d">${r[0]}</span><br><strong>${r[1]}</strong></div>`).join('');
+  document.getElementById('endingQuote').textContent='“'+quote+'”';
+  document.getElementById('achievementList').innerHTML=game.achievements.length?'<strong>本局成就：</strong><br>'+game.achievements.map(a=>`<span class="achievement">🏆 ${a.label}</span>`).join(''):'<span style="color:#766f61">本局没有解锁隐藏成就。至少你还有尊严。</span>';
+  hideModal();showScreen('ending');
+}
+
+function copyReport(){
+  const text=`《末日转盘 V0.1.1》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
+  copyText(text);
+}
+function copyText(t){ if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast();}).catch(function(){fallbackCopy(t);});} else fallbackCopy(t); }
+function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast();}
+
+function debug(){
+  const data=game||{note:'当前没有进行中的游戏'};
+  const text=JSON.stringify(data,null,2);
+  const c=document.getElementById('modalCard');
+  c.innerHTML=`<h2>🪲 调试状态</h2><p>以后你发现 Bug，不用看代码。直接复制下面这坨状态，再告诉我“我刚刚做了什么、我以为会怎样、实际怎样”。</p><div class="debugBox">${escapeHtml(text)}</div><div class="choiceList"><button type="button" class="choice" id="copyDebug">复制调试信息</button><button type="button" class="choice" id="closeDebugBtn">关掉</button></div>`;
+  document.getElementById('copyDebug').addEventListener('click',function(){copyText(text);});
+  document.getElementById('closeDebugBtn').addEventListener('click',hideModal);
+  showModal();
+}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function resetAll(){ if(confirm('确定重置当前进度吗？')){clearSave();game=null;hideModal();showScreen('home');initHome();} }
+
+// bindings
+function bindUI(){
+  var runtime=document.getElementById('runtimeNotice');
+  if(runtime){runtime.className='runtimeNotice ready';runtime.textContent='✅ 游戏脚本已启动，可以直接玩。';setTimeout(function(){runtime.style.opacity='.55';},2200);}
+  document.getElementById('newGameBtn').addEventListener('click',newGame);
+  document.getElementById('continueBtn').addEventListener('click',function(){game=loadSave();if(game){renderGame();showScreen('game');}});
+  document.getElementById('spinBtn').addEventListener('click',function(){
+    var b=document.getElementById('spinBtn');
+    if(b.getAttribute('data-mode')==='next'){b.setAttribute('data-mode','spin');setupNext();return;}
+    spinSetup();
+  });
+  document.getElementById('enterGameBtn').addEventListener('click',startGame);
+  document.querySelectorAll('.location').forEach(function(b){b.addEventListener('click',function(){searchLocation(b.getAttribute('data-loc'));});});
+  document.getElementById('restBtn').addEventListener('click',rest);
+  document.getElementById('endDayBtn').addEventListener('click',endDay);
+  document.getElementById('againBtn').addEventListener('click',newGame);
+  document.getElementById('copyReportBtn').addEventListener('click',copyReport);
+  document.getElementById('debugTop').addEventListener('click',debug);
+  document.getElementById('resetTop').addEventListener('click',resetAll);
+  document.getElementById('modal').addEventListener('click',function(e){if(e.target.id==='modal')hideModal();});
+  initHome();
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',bindUI);}else{bindUI();}
+</script>
+</body>
+</html>
