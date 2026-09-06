@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.1.2</title>
+<title>末日转盘 V0.1.3</title>
 <style>
   :root{
     --bg:#11130f;
@@ -67,7 +67,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.1.2</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.1.3</span></div>
     <div>
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -83,7 +83,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.1.2：修复开局转盘中文字不随盘面旋转的问题；保留人类 / 鸡、3 个搜索地点、随机物资、贪心搜索、身份事件、隐藏结局与调试状态。</div>
+      <div class="tinyNote">V0.1.3：开局不再自动赠送物资；搜索后由玩家决定拿什么、现场使用什么，背包满时可丢弃旧物换新物。鸡的携带空间调整为 3 格。</div>
     </div>
   </section>
 
@@ -166,13 +166,13 @@
 <div id="toast" class="toast">已复制</div>
 
 <script>
-const VERSION = '0.1.2';
-const SAVE_KEY = 'doomsdayWheel_v011_save';
+const VERSION = '0.1.3';
+const SAVE_KEY = 'doomsdayWheel_v013_save';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
 
 const identities = [
   {id:'human', label:'👤 人类', short:'人类', color:'#8f6a45', desc:'工具、背包、谈判。你能做很多事，也因此很容易把自己作死。', cap:8, foodUse:15, waterUse:20},
-  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:2, foodUse:8, waterUse:10}
+  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:3, foodUse:8, waterUse:10}
 ];
 const traits = [
   {id:'lucky', label:'🍀 幸运儿', short:'幸运儿', desc:'风险判定 +12%。'},
@@ -183,9 +183,9 @@ const traits = [
   {id:'unlucky', label:'☁️ 倒霉蛋', short:'倒霉蛋', desc:'危险事件更容易找上门。'}
 ];
 const births = [
-  {id:'apartment', label:'🏢 普通公寓', short:'普通公寓', desc:'安全中等，留下了一点初始物资。'},
-  {id:'farm', label:'🌾 农场', short:'农场', desc:'食物潜力不错，但你并不是这里唯一会饿的生物。'},
-  {id:'supermarket', label:'🛒 超市', short:'超市', desc:'物资很多。人，也很多。'}
+  {id:'apartment', label:'🏢 普通公寓', short:'普通公寓', desc:'安全中等。你醒来时两手空空，附近还有一些地方值得搜。'},
+  {id:'farm', label:'🌾 农场', short:'农场', desc:'食物潜力不错，但物资不会自动掉进你的背包。你得自己去找。'},
+  {id:'supermarket', label:'🛒 超市', short:'超市', desc:'物资很多。人，也很多。你开局依然什么都没拿到。'}
 ];
 
 const items = {
@@ -330,11 +330,11 @@ function renderSetupSummary(){
 function startGame(){
   if(!game.identity||!game.trait||!game.birth) return;
   game.started=true;
-  if(game.birth==='apartment'){addItem('water',1);addItem('crackers',1);}
-  if(game.birth==='farm'){addItem('grain',2);}
-  if(game.birth==='supermarket'){addItem('water',1);addItem('canned',1); game.morale-=5;}
+  // V0.1.3：所有身份开局均不自动获得物资。第一天的第一批物资必须由玩家自己探索并取舍。
+  game.inventory={};
+  if(game.birth==='supermarket') game.morale-=5;
   if(game.identity==='chicken'){ game.food=88; game.water=88; game.morale=68; }
-  log(`末日开始。你是一${game.identity==='chicken'?'只':'个'}${idData().short}，出生在${birthData().short}。`);
+  log(`末日开始。你是一${game.identity==='chicken'?'只':'个'}${idData().short}，出生在${birthData().short}。你什么都没带——第一件物资得自己去找。`);
   if(game.identity==='chicken' && game.trait==='social') log('你是一只社交达人鸡。至少暂时比社交达人蟑螂好一点。');
   save(); renderGame(); showScreen('game');
 }
@@ -409,16 +409,94 @@ function doLootRoll(isGreedy){
   const ps=pendingSearch; if(!ps)return;
   if(isGreedy){ps.depth++; game.greedySearches++; ps.risk += .20 + (game.trait==='curious'?.05:0);}
   const dangerProb=Math.min(.86,ps.risk + (ps.depth-1)*.08 + (game.trait==='unlucky'?.08:0));
-  const loot=lootBatch(ps.loc, ps.rolls + (isGreedy?1:0));
-  let lootText=''; let accepted={};
-  Object.entries(loot).forEach(([id,q])=>{const a=addItem(id,q); if(a)accepted[id]=a;});
-  const lootTags=Object.entries(accepted).map(([id,q])=>`<span class="lootTag">${items[id].icon} ${items[id].name} ×${q}</span>`).join('') || '<span class="lootTag">背包装不下了 😑</span>';
-  const riskPct=Math.round(dangerProb*100);
+  ps.currentDangerProb=dangerProb;
+  ps.currentLoot=lootBatch(ps.loc, ps.rolls + (isGreedy?1:0));
+  renderLootChoice();
+}
+
+function remainingLootCount(){
+  if(!pendingSearch||!pendingSearch.currentLoot)return 0;
+  return Object.values(pendingSearch.currentLoot).reduce((a,b)=>a+b,0);
+}
+
+function renderLootChoice(){
+  const ps=pendingSearch; if(!ps)return;
+  const loot=ps.currentLoot||{};
+  const entries=Object.entries(loot).filter(([id,q])=>q>0);
+  const capacity=`${inventorySlots()} / ${idData().cap}`;
+  const riskPct=Math.round((ps.currentDangerProb||ps.risk)*100);
+  const lootRows=entries.length ? entries.map(([id,q])=>{
+    const it=items[id];
+    const useBtn=it.usable?`<button type="button" class="mini lootUseBtn" data-item="${id}">现场使用</button>`:'';
+    return `<div class="item"><span class="itemName">${it.icon} ${it.name} ×${q}</span><span class="itemBtns"><button type="button" class="mini lootTakeBtn" data-item="${id}">带走 1 个</button>${useBtn}</span></div>`;
+  }).join('') : '<div class="muted">这轮找到的东西已经处理完了。</div>';
   const modal=document.getElementById('modalCard');
-  modal.innerHTML=`<div class="modalIcon">${locationDefs[ps.loc].icon}</div><h2>${locationDefs[ps.loc].name} · ${ps.status}</h2><p>你翻了一圈，能带走的东西是：</p><div class="lootGrid">${lootTags}</div><p class="risk">如果继续搜，当前危险大约 ${riskPct}%。</p><div class="choiceList"><button type="button" class="choice" id="leaveSearchBtn">见好就收<small>带着现在的东西回去。</small></button><button type="button" class="choice" id="greedySearchBtn">再搏一把 🎡<small>多转一次物资，但危险会继续上涨。</small></button></div>`;
+  modal.innerHTML=`<div class="modalIcon">${locationDefs[ps.loc].icon}</div><h2>${locationDefs[ps.loc].name} · ${ps.status}</h2><p>这次你找到了这些东西。<b>不是系统塞给你——拿什么，你自己选。</b></p><div class="inventory">${lootRows}</div><p class="tinyNote">当前携带空间：${capacity} 格。可用物资可以直接在现场吃掉 / 喝掉 / 使用，不占背包。</p><p class="risk">如果继续搜，当前危险大约 ${riskPct}%。</p><div class="choiceList"><button type="button" class="choice" id="leaveSearchBtn">见好就收<small>没拿走的东西会留在这里。</small></button><button type="button" class="choice" id="greedySearchBtn">再搏一把 🎡<small>放弃这轮没拿走的物资，再转一次；危险继续上涨。</small></button></div>`;
+  document.querySelectorAll('.lootTakeBtn').forEach(b=>b.addEventListener('click',()=>takeLootItem(b.getAttribute('data-item'))));
+  document.querySelectorAll('.lootUseBtn').forEach(b=>b.addEventListener('click',()=>useLootOnSite(b.getAttribute('data-item'))));
   document.getElementById('leaveSearchBtn').addEventListener('click',leaveSearch);
   document.getElementById('greedySearchBtn').addEventListener('click',greedySearch);
   showModal();
+}
+
+function decrementCurrentLoot(id){
+  if(!pendingSearch?.currentLoot?.[id])return;
+  pendingSearch.currentLoot[id]--;
+  if(pendingSearch.currentLoot[id]<=0) delete pendingSearch.currentLoot[id];
+}
+
+function takeLootItem(id){
+  if(!pendingSearch?.currentLoot?.[id])return;
+  if(canAdd(id,1)){
+    addItem(id,1); decrementCurrentLoot(id);
+    game.bestLoot=items[id].name;
+    toast(`已带走：${items[id].name}`);
+    renderGame(); renderLootChoice();
+    return;
+  }
+  renderSwapChoice(id);
+}
+
+function renderSwapChoice(newId){
+  const held=Object.entries(game.inventory);
+  const modal=document.getElementById('modalCard');
+  const rows=held.length?held.map(([id,q])=>`<button type="button" class="choice swapDropBtn" data-drop="${id}" data-new="${newId}">丢掉 ${items[id].icon} ${items[id].name} 1 个<small>换成 ${items[newId].icon} ${items[newId].name}</small></button>`).join(''):'<div class="muted">背包虽然说满了，但里面什么都没有。开发组需要挨骂。</div>';
+  modal.innerHTML=`<div class="modalIcon">🎒</div><h2>背包满了</h2><p>你想带走 <b>${items[newId].icon} ${items[newId].name}</b>，但已经没有位置。要丢掉一样旧东西吗？</p><div class="choiceList">${rows}<button type="button" class="choice" id="cancelSwapBtn">算了，不要它<small>回到刚才的物资选择。</small></button></div>`;
+  document.querySelectorAll('.swapDropBtn').forEach(b=>b.addEventListener('click',()=>swapLootItem(b.getAttribute('drop'),b.getAttribute('new'))));
+  document.getElementById('cancelSwapBtn').addEventListener('click',renderLootChoice);
+  showModal();
+}
+
+function swapLootItem(dropId,newId){
+  if(!pendingSearch?.currentLoot?.[newId]){renderLootChoice();return;}
+  removeItem(dropId,1);
+  if(addItem(newId,1)){
+    decrementCurrentLoot(newId);
+    game.bestLoot=items[newId].name;
+    log(`你丢下了${items[dropId].name}，换成了${items[newId].name}。末日背包没有感情。`);
+    toast(`已替换为：${items[newId].name}`);
+  }else{
+    // 理论上不该发生，若物品尺寸未来改变则把旧物补回去。
+    addItem(dropId,1);
+    toast('还是装不下。');
+  }
+  renderGame(); renderLootChoice();
+}
+
+function useLootOnSite(id){
+  if(!pendingSearch?.currentLoot?.[id])return;
+  const it=items[id]; if(!it?.usable)return;
+  const before=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
+  const msg=it.use(game);
+  const after=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
+  // 对于打不开的罐头、鸡无法处理的罐头等，不消耗现场物资。
+  if(before===after){
+    log(msg); toast('没用上。'); renderGame(); renderLootChoice(); return;
+  }
+  decrementCurrentLoot(id);
+  log(`现场使用：${msg}`);
+  toast(`现场用了：${it.name}`);
+  renderGame(); renderLootChoice(); checkEnding();
 }
 
 function greedySearch(){
@@ -595,7 +673,7 @@ function finish(title,quote,cause){
 }
 
 function copyReport(){
-  const text=`《末日转盘 V0.1.2》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
+  const text=`《末日转盘 V0.1.3》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
   copyText(text);
 }
 function copyText(t){ if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast();}).catch(function(){fallbackCopy(t);});} else fallbackCopy(t); }
