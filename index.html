@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.1.5</title>
+<title>末日转盘 V0.1.7</title>
 <style>
   :root{
     --bg:#11130f;
@@ -60,6 +60,11 @@
   .toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%) translateY(20px);background:#eee5d0;color:#1c2019;padding:10px 14px;border-radius:999px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .tinyNote{font-size:12px;color:#7f8875;margin-top:10px;line-height:1.55}
   .runtimeNotice{margin-top:14px;padding:11px 13px;border-radius:11px;font-size:13px;line-height:1.55}.runtimeNotice.blocked{background:rgba(189,79,69,.13);border:1px solid rgba(189,79,69,.55);color:#f1b8b2}.runtimeNotice.ready{background:rgba(111,154,98,.13);border:1px solid rgba(111,154,98,.5);color:#c8e1c1}
+  .identityArchive{margin-top:14px;padding:16px;border:1px solid #665b43;border-radius:16px;background:linear-gradient(145deg,#272820,#1e211a);position:relative;overflow:hidden}
+  .identityArchive:before{content:"IDENTITY FILE";position:absolute;right:-8px;top:12px;transform:rotate(8deg);font-size:10px;letter-spacing:.16em;font-weight:900;color:rgba(233,223,200,.22)}
+  .archiveBadge{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;color:#171914;background:var(--accent);padding:5px 8px;border-radius:999px;margin-bottom:9px}
+  .archiveBadge.normal{background:#3b4035;color:#cbd1c1}
+  .archiveTitle{font-size:26px;font-weight:950;line-height:1.1;margin:2px 0 8px}.archiveIcon{font-size:32px;margin-right:7px}.archiveDesc{color:#c8cdbd;line-height:1.7;font-size:14px}.archiveMeta{margin-top:10px;color:#8f9784;font-size:12px}
   @media(max-width:740px){.setup-grid,.gameGrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.locationGrid{grid-template-columns:1fr 1fr}.report{grid-template-columns:1fr}.hero{padding:32px 18px}.sidePanel{order:2}.wheelBox{width:min(82vw,320px)}}
 </style>
 </head>
@@ -67,7 +72,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.1.5</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.1.7</span></div>
     <div>
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -83,7 +88,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.1.3：开局不再自动赠送物资；搜索后由玩家决定拿什么、现场使用什么，背包满时可丢弃旧物换新物。鸡的携带空间调整为 3 格。</div>
+      <div class="tinyNote">V0.1.7：身份档案版。开局组合会生成一张小身份卡，特殊组合可能获得彩蛋称号；部分结局会回收你的开局身份梗。短局高压规则继续保留。</div>
     </div>
   </section>
 
@@ -170,8 +175,8 @@
 <div id="toast" class="toast">已复制</div>
 
 <script>
-const VERSION = '0.1.5';
-const SAVE_KEY = 'doomsdayWheel_v015_save';
+const VERSION = '0.1.7';
+const SAVE_KEY = 'doomsdayWheel_v017_save';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
 
 const identities = [
@@ -229,7 +234,7 @@ function defaultGame(){
     hp:100, food:82, water:82, morale:72, inventory:{}, storage:{}, log:[], flags:{}, achievements:[],
     searches:0, greedySearches:0, reputation:0, chickenValue:35, eggsLaid:0, lastEggDay:0,
     roachStompEscapes:0, roachContacts:0, dayEffect:null, morningDone:true,
-    dangerFaced:0, bestLoot:'无', ending:null, started:false, injury:0,
+    dangerFaced:0, bestLoot:'无', ending:null, started:false, injury:0, identityCard:null,
     crisisPlan:[], resolvedCrises:[], cluesSeen:{}, lastCrisis:null
   };
 }
@@ -249,6 +254,46 @@ function idData(){return byId(identities,game.identity)}
 function traitData(){return byId(traits,game.trait)}
 function birthData(){return byId(births,game.birth)}
 function identityMeasure(){return game.identity==='human'?'个':'只'}
+function makeIdentityCard(){
+  if(!game||!game.identity||!game.trait||!game.birth) return null;
+  const i=game.identity,t=game.trait,b=game.birth;
+  const specials=[
+    {ok:i==='chicken'&&b==='supermarket',icon:'🐔🛒',title:'货架逃生者',desc:'你在一间已经开始混乱的超市里醒来。周围全是罐头、矿泉水，以及一些让你非常没有安全感的冷柜。幸运的是，你还活着。至少暂时没有被归入商品。'},
+    {ok:i==='chicken'&&t==='social',icon:'🐔🤝',title:'村口明星',desc:'你是一只非常擅长跨物种沟通的鸡。末日前这也许只是讨喜，末日后它可能决定别人把你当“认识的鸡”，还是“今天的蛋白质”。'},
+    {ok:i==='chicken'&&b==='farm',icon:'🐔🌾',title:'农业原住民',desc:'你醒在一个熟悉得有点危险的地方：有谷物、有水，也有不少比你更清楚食物链规则的动物。'},
+    {ok:i==='cockroach'&&t==='social'&&b==='apartment',icon:'🪳🤝',title:'社区活动家',desc:'你住在一栋人口密集的公寓里。大多数居民并不知道你是谁。以你的社交能力来看，这种情况很快会改变。'},
+    {ok:i==='cockroach'&&t==='social',icon:'🪳🤝',title:'跨物种公关代表',desc:'没有人要求一只蟑螂经营人脉，但你还是决定试试。世界毁灭之前，人类没想到最后还得面对昆虫社交网络。'},
+    {ok:i==='cockroach'&&b==='supermarket',icon:'🪳🛒',title:'货架原住民',desc:'别人把超市当物资点，你把这里当大型恒温自助餐厅。唯一的问题是：这里的鞋也很多。'},
+    {ok:i==='cockroach'&&b==='apartment',icon:'🪳🏢',title:'未登记室友',desc:'你从末日前就住在这里，只是房东和其他住户从未正式承认过这段合租关系。现在他们似乎也没空管了。'},
+    {ok:i==='human'&&b==='supermarket'&&t==='curious',icon:'👤🛒',title:'清仓区冒险家',desc:'世界正在崩溃，而你醒在一家超市里，还偏偏拥有旺盛的好奇心。很难说这是天选开局，还是事故预告。'},
+    {ok:i==='human'&&b==='supermarket',icon:'👤🛒',title:'天选采购员',desc:'末日刚开始，你人就在超市。听起来像天胡开局——直到你发现其他所有人也这么想。'}
+  ];
+  const sp=specials.find(x=>x.ok);
+  if(sp) return {...sp,special:true,badge:'✨ 彩蛋身份'};
+  const normal={
+    human:{icon:'👤',title:'普通幸存者',desc:`你是一个从${birthData().short}开始求生的普通人。普通不是坏事——至少命运暂时还没给你起外号。`},
+    chicken:{icon:'🐔',title:'暂未上桌',desc:`你是一只从${birthData().short}开始求生的鸡。你的长期目标很宏大：继续保持“活鸡”状态。`},
+    cockroach:{icon:'🪳',title:'低调居民',desc:`你是一只从${birthData().short}开始活动的蟑螂。对别人而言这是末日，对你而言更像一次规模很大的环境改造。`}
+  }[i];
+  return {...normal,special:false,badge:'本局身份档案'};
+}
+function renderIdentityCardPreview(){
+  const card=makeIdentityCard(); if(!card)return;
+  game.identityCard=card;
+  document.getElementById('setupFlavor').innerHTML=`<div class="identityArchive"><span class="archiveBadge ${card.special?'':'normal'}">${card.badge}</span><div class="archiveTitle"><span class="archiveIcon">${card.icon}</span>${card.title}</div><div class="archiveDesc">${card.desc}</div><div class="archiveMeta">${idData().short} · ${traitData().short} · ${birthData().short}</div></div>`;
+}
+function identityEndingQuote(title,cause,baseQuote){
+  const card=game.identityCard||makeIdentityCard();
+  if(game.identity==='chicken'&&game.birth==='supermarket'){
+    if(String(cause).includes('野狗')) return '你逃出了货架，没有逃出食物链。';
+    if(String(cause).includes('幸存者')||title==='今晚加餐') return '你成功避开了超市的食品分类，最后还是没能彻底退出食物链。';
+    if(title==='鸡生赢家'||String(cause).includes('稳定活鸡')) return '从超市里醒来的那只鸡，居然真的把“暂时没被吃”活成了长期项目。';
+  }
+  if(game.identity==='cockroach'&&game.birth==='supermarket'&&String(cause).includes('踩死')) return '你把超市当成了家，超市最后用一只鞋完成了退租。';
+  if(game.identity==='cockroach'&&game.trait==='social'&&title==='世界毁灭与你关系不大') return '文明摇摇欲坠，你的人脉倒是越做越大。';
+  if(card&&card.title==='村口明星'&&String(cause).includes('野狗')) return '你认识很多人。可惜那只狗不是来社交的。';
+  return baseQuote;
+}
 function freshDayEffect(){return {name:'普通的一天',desc:'没有额外影响。',riskMods:{},lootBonus:{},preferredItems:[],waterUseBonus:0,foodUseBonus:0,restBonus:0};}
 function dayEffect(){if(!game.dayEffect)game.dayEffect=freshDayEffect();return game.dayEffect;}
 function hasItem(id){return (game.inventory[id]||0)>0}
@@ -262,11 +307,11 @@ function canStore(id,q=1){return storageSlots()+(items[id]?.size||1)*q <= idData
 function shelterScore(){return birthData()?.shelter||1}
 function injuryLabel(){return game.injury===2?'重伤':game.injury===1?'受伤':'无明显伤势'}
 function worldPhase(){
-  if(game.day<=3)return {label:'街上还残留着一点秩序',risk:0};
-  if(game.day<=6)return {label:'抢夺和断供开始变得常见',risk:.06};
-  if(game.day<=9)return {label:'城市正在明显失去控制',risk:.13};
-  if(game.day<=13)return {label:'现在每次外出都像在赌',risk:.21};
-  return {label:'几乎没有真正安全的路线了',risk:.30};
+  if(game.day<=2)return {label:'街上还残留着一点秩序',risk:0};
+  if(game.day<=4)return {label:'抢夺和断供已经开始',risk:.10};
+  if(game.day<=6)return {label:'城市正在快速失去控制',risk:.18};
+  if(game.day<=8)return {label:'现在每次外出都像在赌',risk:.28};
+  return {label:'安全路线几乎已经消失',risk:.38};
 }
 function currentMaxActions(){return game.injury>=2?1:2}
 function foodStock(){return totalItemCount('crackers')+totalItemCount('grain')+totalItemCount('canned')+totalItemCount('egg')}
@@ -366,7 +411,7 @@ function spinSetup(){
     setupStage++; wheelLocked=false;
     document.getElementById('spinBtn').disabled=false;
     if(setupStage<3){document.getElementById('spinBtn').textContent='下一项 →';document.getElementById('spinBtn').setAttribute('data-mode','next');}
-    else {document.getElementById('spinBtn').style.display='none';document.getElementById('enterGameBtn').style.display='block';}
+    else {document.getElementById('spinBtn').style.display='none';document.getElementById('enterGameBtn').style.display='block';renderIdentityCardPreview();}
   },2250);
 }
 
@@ -379,6 +424,7 @@ function renderSetupSummary(){
 function startGame(){
   if(!game.identity||!game.trait||!game.birth) return;
   game.started=true;
+  game.identityCard=makeIdentityCard();
   // V0.1.3：所有身份开局均不自动获得物资。第一天的第一批物资必须由玩家自己探索并取舍。
   game.inventory={};
   game.storage={};
@@ -392,7 +438,7 @@ function startGame(){
   game.dayEffect={name:'末日第一天',desc:'没有晨间事件。先自己找第一批物资。',riskMods:{},lootBonus:{},preferredItems:[],waterUseBonus:0,foodUseBonus:0,restBonus:0};
   game.maxActions=currentMaxActions(); game.actions=game.maxActions;
   game.morningDone=true;
-  log(`末日开始。你是一${identityMeasure()}${idData().short}，出生在${birthData().short}。你什么都没带——第一件物资得自己去找。`);
+  log(`末日开始。你是一${identityMeasure()}${idData().short}，出生在${birthData().short}。本局身份档案：${game.identityCard?.title||'未知'}。你什么都没带——第一件物资得自己去找。`);
   if(game.identity==='chicken' && game.trait==='social') log('你是一只社交达人鸡。至少暂时比社交达人蟑螂好一点。');
   if(game.identity==='cockroach' && game.trait==='social') log('你是一只社交达人蟑螂。开发组对此表示不安。');
   save(); renderGame(); showScreen('game');
@@ -419,7 +465,7 @@ function renderGame(){
   document.getElementById('capacityText').textContent=`随身空间：${inventorySlots()} / ${idData().cap} 格`;
   document.getElementById('storageCapacityText').textContent=`藏物空间：${storageSlots()} / ${idData().storageCap} 格`;
   document.getElementById('log').innerHTML=game.log.length?game.log.map(x=>`<div class="logItem"><div class="logDay">DAY ${x.day}</div>${x.text}</div>`).join(''):'<span class="muted">还没有记录。</span>';
-  document.getElementById('gameSummary').innerHTML=[['出生地',birthData().short],['天赋',traitData().short],['今日局势',dayEffect().name],['身体状态',injuryLabel()],['搜索次数',game.searches]].map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
+  document.getElementById('gameSummary').innerHTML=[['身份档案',(game.identityCard||makeIdentityCard())?.title||'未命名'],['出生地',birthData().short],['天赋',traitData().short],['今日局势',dayEffect().name],['身体状态',injuryLabel()],['搜索次数',game.searches]].map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
   const baseSpecial=game.identity==='chicken'?`🐔 活鸡价值：${game.chickenValue}/100 · 已下蛋：${game.eggsLaid}`:(game.identity==='cockroach'?`🪳 鞋底逃生：${game.roachStompEscapes} · 跨物种人脉：${game.roachContacts}`:`👤 人际声誉：${game.reputation>=0?'+':''}${game.reputation}`);
   document.getElementById('specialStatus').textContent=`${baseSpecial} · 🩹 ${injuryLabel()}`;
   save();
@@ -644,9 +690,16 @@ function randomPostSearchEvent(){
 }
 
 function rest(){
-  if(game.actions<=0)return;game.actions--;const bonus=dayEffect().restBonus||0;game.morale+=12+bonus;game.hp+=5;
-  let heal=''; if(game.injury===1 && rand()<.7){game.injury=0;heal='，轻伤也缓过来了';}else if(game.injury===2 && rand()<.45){game.injury=1;heal='，重伤稍微稳定了一点';}
-  log(`你决定不折腾，安静休息了一会儿。士气 +${12+bonus}，生命 +5${heal}。`);renderGame();
+  if(game.actions<=0)return;
+  game.actions--;
+  const bonus=dayEffect().restBonus||0;
+  const moraleGain=8+bonus;
+  game.morale+=moraleGain;
+  let heal='';
+  if(game.injury===1 && rand()<.30){game.injury=0;heal='，轻伤终于稳定下来';}
+  else if(game.injury===2){heal='，但重伤不是睡一觉能解决的';}
+  log(`你缩在安全处休息了一会儿。士气 +${moraleGain}${heal}。生命不会因为休息自动恢复。`);
+  renderGame();
 }
 
 function finishMorning(name,desc,logText){
@@ -660,7 +713,7 @@ function foodIdsInBag(){return ['crackers','grain','canned','egg'].filter(hasIte
 function makeCrisisPlan(){
   const types=['water','cold','unrest','smoke'];
   for(let i=types.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[types[i],types[j]]=[types[j],types[i]];}
-  return [4,7,10,14].map((day,i)=>({day,type:types[i]}));
+  return [3,5,7,9].map((day,i)=>({day,type:types[i]}));
 }
 function crisisInfo(type){
   return {
@@ -725,7 +778,7 @@ function triggerCrisis(c){
     unrest:`天还没完全亮，楼下就传来玻璃碎裂的声音。\n\n有人在跑，有人在喊，还有人开始挨家挨户敲门。`,
     smoke:`你醒来时先闻到了焦味。\n\n窗外已经看不清远处，黑烟正顺着风往这一片压。`
   };
-  openEvent(info.icon,info.title,stories[c.type],[{text:'想办法撑过去',desc:'你之前带回来的东西、身体状态和住处，现在都会算数。',fn:()=>resolveCrisis(c)}]);
+  openEvent(info.icon,info.title,stories[c.type],[{text:'先活过今天',desc:'你现在能依靠的，只有之前留下的东西和自己的状态。',fn:()=>resolveCrisis(c)}]);
 }
 function resolveCrisis(c){
   hideModal();
@@ -735,17 +788,14 @@ function resolveCrisis(c){
   if(c.type==='smoke'&&hasPossession('water'))consumePossession('water',1);
   if(c.type==='smoke'&&hasPossession('tape'))consumePossession('tape',1);
   if(score>=need+1){
-    game.morale+=4; game.dayEffect.name='熬过去了'; game.dayEffect.desc='今天的世界很糟，但你的准备没有白费。';
-    log(`这一轮真正的麻烦来了，但你准备得比自己想象中好。你撑了过去。`);renderGame();save();return;
+    game.morale+=3; game.dayEffect.name='熬过去了'; game.dayEffect.desc='你提前做的准备终于派上了用场。';
+    log('真正的麻烦来了，但你手里刚好有能救命的东西。你撑了过去。');renderGame();save();return;
   }
   if(score>=need){
-    game.hp-=12; game.morale-=6; game.dayEffect.name='勉强撑住'; game.dayEffect.desc='你活下来了，但今天状态不算好。';
-    log('你勉强撑过了这一阵。生命 -12，士气 -6。');renderGame();checkEnding();save();return;
-  }
-  if(score===need-1){
-    game.hp-=42; game.morale-=18; game.injury=Math.max(game.injury,c.type==='cold'?2:1); game.maxActions=currentMaxActions();game.actions=Math.min(game.actions,game.maxActions);
-    game.dayEffect.name='付出了代价'; game.dayEffect.desc='你活下来了，但身体状态明显变差。';
-    log('你没准备充分，但命还在。生命 -42，士气 -18，并留下伤势。');renderGame();checkEnding();save();return;
+    game.hp-=25; game.morale-=10; game.injury=Math.max(game.injury,c.type==='cold'?2:1);
+    game.maxActions=currentMaxActions();game.actions=Math.min(game.actions,game.maxActions);
+    game.dayEffect.name='勉强活下来'; game.dayEffect.desc='你过了这一关，但代价会跟着你进入下一天。';
+    log('你勉强活了下来。生命 -25，士气 -10，并留下伤势。下一场麻烦不会等你恢复。');renderGame();checkEnding();save();return;
   }
   const causes={water:'严重缺水',cold:'极端低温',unrest:'街区骚乱',smoke:'火灾与浓烟'};
   const quotes={water:'真正断水的时候，你才发现“等需要了再找”已经来不及。',cold:'气温不会因为你还没准备好就慢一点。',unrest:'世界乱起来以后，门外的人不一定只是来借东西。',smoke:'黑烟飘过来的时候，留给人的选择比想象中少。'};
@@ -847,8 +897,8 @@ function endDay(){
   foodUse+=(dayEffect().foodUseBonus||0); waterUse+=(dayEffect().waterUseBonus||0);
   game.food-=foodUse;game.water-=waterUse;
   if(game.flags.waterRumorTrueToday){log('那条停水消息是真的。你今晚比平时更缺水。');delete game.flags.waterRumorTrueToday;}
-  if(game.food<=20)game.hp-=game.food<=0?15:8;
-  if(game.water<=20)game.hp-=game.water<=0?25:12;
+  if(game.food<=20)game.hp-=game.food<=0?20:10;
+  if(game.water<=20)game.hp-=game.water<=0?35:18;
   if(game.food>45 && game.water>45)game.morale+=2;
   game.day++;
   if(game.ending)return;
@@ -950,28 +1000,30 @@ function resolveChickenShelter(){
 function checkEnding(){
   if(game.ending)return true;
   if(game.hp<=0){finish('到此为止','你已经没有力气继续了。末日没有给你第二条命，但按钮会。','生命归零');return true;}
-  if(game.day>=15){
-    if(game.identity==='human' && game.reputation>=20){finish('临时社区','你和几名幸存者建立了一个勉强能运转的小社区。至少现在，大家愿意一起活。','V0.1 Demo 稳定结局');}
-    else if(game.identity==='chicken' && game.chickenValue>=65){finish('鸡生赢家','你成功找到了稳定食物和一个没有立刻想吃你的地方。对于一只鸡来说，已经非常优秀。','V0.1 Demo 稳定结局');}
-    else if(game.identity==='cockroach'){finish('世界毁灭与你关系不大','人类文明已经乱成一团，而你仍然在墙缝里认真活着。说不定这才是稳定。','蟑螂 Demo 稳定结局');}
-    else finish('活过测试期','你活过了 V0.1 的 15 天测试期。开发组暂时还没写更多灾难来折磨你。','Demo 达成');
+  if(game.day>=10){
+    if(game.identity==='human' && game.reputation>=20){finish('临时社区','第十天，你终于和几名幸存者把门堵好、把水分开，也把彼此的名字记住了。这里称不上文明，但已经不只是逃命。','十日终局 · 建立临时社区');}
+    else if(game.identity==='chicken' && game.chickenValue>=65){finish('鸡生赢家','你撑过了最混乱的十天，还找到了一个暂时没人想把你端上桌的地方。作为一只鸡，这已经是史诗级履历。','十日终局 · 稳定活鸡');}
+    else if(game.identity==='cockroach'){finish('世界毁灭与你关系不大','第十天，人类还在讨论秩序什么时候恢复。你已经换了三个墙缝，并且觉得这里发展前景不错。','十日终局 · 蟑螂仍然健在');}
+    else finish('十日幸存者','你撑过了最危险的十天。没人知道后面会不会更好，但这一局，命运暂时没能把你收走。','十日终局');
     return true;
   }
   return false;
 }
 
 function finish(title,quote,cause){
-  game.ending={title,quote,cause,day:game.day}; clearSave();
+  const finalQuote=identityEndingQuote(title,cause,quote);
+  game.identityCard=game.identityCard||makeIdentityCard();
+  game.ending={title,quote:finalQuote,cause,day:game.day}; clearSave();
   document.getElementById('endingTitle').textContent=title;
-  const report=[['身份',idData().label],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['搜索次数',game.searches],['贪心次数',game.greedySearches],['最终原因',cause]];
+  const report=[['身份',idData().label],['身份档案',game.identityCard?.title||'未命名'],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['搜索次数',game.searches],['贪心次数',game.greedySearches],['最终原因',cause]];
   document.getElementById('report').innerHTML=report.map(r=>`<div><span style="color:#776e5d">${r[0]}</span><br><strong>${r[1]}</strong></div>`).join('');
-  document.getElementById('endingQuote').textContent='“'+quote+'”';
+  document.getElementById('endingQuote').textContent='“'+finalQuote+'”';
   document.getElementById('achievementList').innerHTML=game.achievements.length?'<strong>本局成就：</strong><br>'+game.achievements.map(a=>`<span class="achievement">🏆 ${a.label}</span>`).join(''):'<span style="color:#766f61">本局没有解锁隐藏成就。至少你还有尊严。</span>';
   hideModal();showScreen('ending');
 }
 
 function copyReport(){
-  const text=`《末日转盘 V0.1.5》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
+  const text=`《末日转盘 V0.1.7》\n身份：${idData().short}\n身份档案：${(game.identityCard||makeIdentityCard())?.title||'未命名'}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
   copyText(text);
 }
 function copyText(t){ if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast();}).catch(function(){fallbackCopy(t);});} else fallbackCopy(t); }
