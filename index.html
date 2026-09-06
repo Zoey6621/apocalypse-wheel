@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.1.1 iPhone兼容版</title>
+<title>末日转盘 V0.1.2</title>
 <style>
   :root{
     --bg:#11130f;
@@ -43,7 +43,7 @@
   .pointer{position:absolute;left:50%;top:-5px;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:29px solid var(--accent);z-index:3;filter:drop-shadow(0 4px 3px rgba(0,0,0,.35))}
   .wheel{width:100%;height:100%;border-radius:50%;border:9px solid #dad0b8;box-shadow:0 0 0 5px #5c5c4e,0 20px 45px rgba(0,0,0,.35);position:relative;transition:transform 2.2s cubic-bezier(.12,.76,.18,1);overflow:hidden}
   .wheel:after{content:"";position:absolute;width:25%;height:25%;border-radius:50%;background:#171914;border:5px solid #e9dfc8;left:37.5%;top:37.5%;z-index:2}
-  .wheelLabels{position:absolute;inset:0;pointer-events:none;z-index:1}
+  .wheelLabels{position:absolute;inset:0;pointer-events:none;z-index:1;transition:transform 2.2s cubic-bezier(.12,.76,.18,1);transform-origin:50% 50%}
   .wheelLabel{position:absolute;left:50%;top:50%;transform-origin:0 0;font-weight:900;text-shadow:0 1px 2px #000;font-size:14px;width:110px;text-align:center}
   .summary{display:grid;gap:10px}.summaryRow{display:flex;justify-content:space-between;border-bottom:1px dashed #3e4437;padding:10px 0}.summaryRow span:first-child{color:var(--muted)}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat{padding:11px 10px;border-radius:13px;background:var(--panel2);border:1px solid var(--line)}.statLabel{font-size:12px;color:var(--muted)}.statValue{font-weight:900;font-size:20px;margin-top:3px}.bar{height:6px;background:#34382f;border-radius:99px;margin-top:7px;overflow:hidden}.bar>i{display:block;height:100%;background:#d7d1bd;width:50%;border-radius:99px;transition:width .25s}
@@ -67,7 +67,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.1.1 iPhone</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.1.2</span></div>
     <div>
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -83,7 +83,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.1.1：针对 iPhone / 本地文件环境强化兼容；开放人类 / 鸡、3 个搜索地点、随机物资、贪心搜索、身份事件、隐藏结局与调试状态。</div>
+      <div class="tinyNote">V0.1.2：修复开局转盘中文字不随盘面旋转的问题；保留人类 / 鸡、3 个搜索地点、随机物资、贪心搜索、身份事件、隐藏结局与调试状态。</div>
     </div>
   </section>
 
@@ -166,7 +166,7 @@
 <div id="toast" class="toast">已复制</div>
 
 <script>
-const VERSION = '0.1.1';
+const VERSION = '0.1.2';
 const SAVE_KEY = 'doomsdayWheel_v011_save';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
 
@@ -288,7 +288,7 @@ function renderWheel(opts){
   const seg=360/opts.length;
   const gradients=opts.map((_,i)=>`${colors[i%colors.length]} ${i*seg}deg ${(i+1)*seg}deg`).join(',');
   const w=document.getElementById('wheel'); w.style.background=`conic-gradient(${gradients})`;
-  const labels=document.getElementById('wheelLabels'); labels.innerHTML='';
+  const labels=document.getElementById('wheelLabels'); labels.innerHTML=''; labels.style.transform=`rotate(${wheelRotation}deg)`;
   opts.forEach((o,i)=>{
     const d=document.createElement('div');d.className='wheelLabel';
     const angle=(i+.5)*seg-90;
@@ -306,6 +306,7 @@ function spinSetup(){
   const idx=Math.floor(rand()*currentWheelOptions.length); const seg=360/currentWheelOptions.length;
   const target=360-(idx+.5)*seg; wheelRotation += 1440 + target - (wheelRotation%360);
   document.getElementById('wheel').style.transform=`rotate(${wheelRotation}deg)`;
+  document.getElementById('wheelLabels').style.transform=`rotate(${wheelRotation}deg)`;
   setTimeout(()=>{
     const result=currentWheelOptions[idx];
     if(setupStage===0) game.identity=result.id;
@@ -594,7 +595,7 @@ function finish(title,quote,cause){
 }
 
 function copyReport(){
-  const text=`《末日转盘 V0.1.1》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
+  const text=`《末日转盘 V0.1.2》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
   copyText(text);
 }
 function copyText(t){ if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast();}).catch(function(){fallbackCopy(t);});} else fallbackCopy(t); }
