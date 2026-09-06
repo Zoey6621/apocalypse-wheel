@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.1.3</title>
+<title>末日转盘 V0.1.4</title>
 <style>
   :root{
     --bg:#11130f;
@@ -67,7 +67,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.1.3</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.1.4</span></div>
     <div>
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -104,7 +104,7 @@
       <div class="card">
         <div class="step-title">本局档案</div>
         <div class="summary" id="setupSummary"></div>
-        <div id="setupFlavor" class="desc" style="margin-top:16px">先转一下。别紧张，最差也就是成为鸡。</div>
+        <div id="setupFlavor" class="desc" style="margin-top:16px">先转一下。现在最差不一定是鸡了。</div>
         <button type="button" class="primary" id="enterGameBtn" style="width:100%;margin-top:18px;display:none">进入末日</button>
       </div>
     </div>
@@ -166,13 +166,14 @@
 <div id="toast" class="toast">已复制</div>
 
 <script>
-const VERSION = '0.1.3';
-const SAVE_KEY = 'doomsdayWheel_v013_save';
+const VERSION = '0.1.4';
+const SAVE_KEY = 'doomsdayWheel_v014_save';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
 
 const identities = [
-  {id:'human', label:'👤 人类', short:'人类', color:'#8f6a45', desc:'工具、背包、谈判。你能做很多事，也因此很容易把自己作死。', cap:8, foodUse:15, waterUse:20},
-  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:3, foodUse:8, waterUse:10}
+  {id:'human', label:'👤 人类', short:'人类', color:'#8f6a45', desc:'工具、背包、谈判。你能做很多事，也因此很容易把自己作死。', cap:8, foodUse:15, waterUse:20, weight:45},
+  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:3, foodUse:8, waterUse:10, weight:25},
+  {id:'cockroach', label:'🪳 蟑螂', short:'蟑螂', color:'#5f6a46', desc:'吃得少、喝得少、擅长钻缝。末日未必能杀死你，但鞋底可以。', cap:2, foodUse:3, waterUse:4, weight:30}
 ];
 const traits = [
   {id:'lucky', label:'🍀 幸运儿', short:'幸运儿', desc:'风险判定 +12%。'},
@@ -191,14 +192,14 @@ const births = [
 const items = {
   water:{name:'饮用水', icon:'💧', size:1, usable:true, use:(s)=>{s.water=Math.min(100,s.water+35);return '喝掉一瓶水，水分 +35。';}},
   crackers:{name:'饼干', icon:'🍪', size:1, usable:true, use:(s)=>{s.food=Math.min(100,s.food+24);return '吃掉饼干，饱食 +24。';}},
-  grain:{name:'谷物', icon:'🌾', size:1, usable:true, use:(s)=>{s.food=Math.min(100,s.food+(s.identity==='chicken'?32:16));return s.identity==='chicken'?'啄了一阵谷物。非常专业。饱食 +32。':'吃了点干巴巴的谷物，饱食 +16。';}},
-  canned:{name:'罐头', icon:'🥫', size:1, usable:true, use:(s)=>{if(s.identity==='human' && !hasItem('opener')) return '你盯着罐头。罐头也盯着你。没有开罐器。'; if(s.identity==='chicken') return '你是一只鸡。你对金属罐头暂时没有解决方案。'; s.food=Math.min(100,s.food+42);return '打开罐头，饱食 +42。';}},
+  grain:{name:'谷物', icon:'🌾', size:1, usable:true, use:(s)=>{const gain=s.identity==='chicken'?32:(s.identity==='cockroach'?24:16);s.food=Math.min(100,s.food+gain);return s.identity==='chicken'?'啄了一阵谷物。非常专业。饱食 +32。':(s.identity==='cockroach'?'在谷物碎屑里开了自助餐。饱食 +24。':'吃了点干巴巴的谷物，饱食 +16。');}},
+  canned:{name:'罐头', icon:'🥫', size:1, usable:true, use:(s)=>{if(s.identity==='human' && !hasItem('opener')) return '你盯着罐头。罐头也盯着你。没有开罐器。'; if(s.identity==='chicken') return '你是一只鸡。你对金属罐头暂时没有解决方案。'; if(s.identity==='cockroach') return '你是一只蟑螂。罐头是有食物的堡垒，但你进不去。'; s.food=Math.min(100,s.food+42);return '打开罐头，饱食 +42。';}},
   opener:{name:'开罐器', icon:'🔧', size:1, usable:false},
-  medkit:{name:'急救包', icon:'🩹', size:1, usable:true, use:(s)=>{s.hp=Math.min(100,s.hp+35);return '处理了一下伤口，生命 +35。';}},
+  medkit:{name:'急救包', icon:'🩹', size:1, usable:true, use:(s)=>{if(s.identity==='cockroach') return '你围着急救包转了一圈。它没有蟑螂尺寸的说明书。';s.hp=Math.min(100,s.hp+35);return '处理了一下伤口，生命 +35。';}},
   tape:{name:'胶带', icon:'🧻', size:1, usable:false},
   candles:{name:'生日蜡烛', icon:'🕯️', size:1, usable:false},
   soap:{name:'洗洁精', icon:'🧴', size:1, usable:false},
-  egg:{name:'鸡蛋', icon:'🥚', size:1, usable:true, use:(s)=>{s.food=Math.min(100,s.food+22);return s.identity==='chicken'?'……你选择吃掉了自己的蛋。末日没有伦理课。饱食 +22。':'吃掉鸡蛋，饱食 +22。';}}
+  egg:{name:'鸡蛋', icon:'🥚', size:1, usable:true, use:(s)=>{const gain=s.identity==='cockroach'?34:22;s.food=Math.min(100,s.food+gain);return s.identity==='chicken'?'……你选择吃掉了自己的蛋。末日没有伦理课。饱食 +22。':(s.identity==='cockroach'?'你找到蛋壳裂缝钻了进去。蟑螂豪华自助餐，饱食 +34。':'吃掉鸡蛋，饱食 +22。');}}
 };
 
 const locationDefs = {
@@ -219,6 +220,7 @@ function defaultGame(){
     version:VERSION, day:1, actions:2, maxActions:2, identity:null, trait:null, birth:null, disaster:'社会秩序崩溃',
     hp:100, food:82, water:82, morale:72, inventory:{}, log:[], flags:{}, achievements:[],
     searches:0, greedySearches:0, reputation:0, chickenValue:35, eggsLaid:0, lastEggDay:0,
+    roachStompEscapes:0, roachContacts:0, dayEffect:null, morningDone:true,
     dangerFaced:0, bestLoot:'无', ending:null, started:false
   };
 }
@@ -237,6 +239,9 @@ function byId(arr,id){return arr.find(x=>x.id===id)}
 function idData(){return byId(identities,game.identity)}
 function traitData(){return byId(traits,game.trait)}
 function birthData(){return byId(births,game.birth)}
+function identityMeasure(){return game.identity==='human'?'个':'只'}
+function freshDayEffect(){return {name:'普通的一天',desc:'没有额外影响。',riskMods:{},lootBonus:{},preferredItems:[],waterUseBonus:0,foodUseBonus:0,restBonus:0};}
+function dayEffect(){if(!game.dayEffect)game.dayEffect=freshDayEffect();return game.dayEffect;}
 function hasItem(id){return (game.inventory[id]||0)>0}
 function inventorySlots(){return Object.entries(game.inventory).reduce((n,[id,q])=>n+(items[id]?.size||1)*q,0)}
 function canAdd(id,q=1){return inventorySlots()+(items[id]?.size||1)*q <= idData().cap}
@@ -283,15 +288,25 @@ function setupNext(){
   renderSetupSummary();
 }
 
+function wheelGeometry(opts){
+  const total=opts.reduce((n,o)=>n+(o.weight||1),0);
+  let cursor=0;
+  return opts.map(o=>{const span=360*(o.weight||1)/total;const g={start:cursor,end:cursor+span,mid:cursor+span/2,span};cursor+=span;return g;});
+}
+function weightedIndex(opts){
+  const total=opts.reduce((n,o)=>n+(o.weight||1),0);let r=rand()*total;
+  for(let i=0;i<opts.length;i++){r-=(opts[i].weight||1);if(r<0)return i;}
+  return opts.length-1;
+}
 function renderWheel(opts){
   const colors=['#80623f','#86544c','#5b7148','#4f6870','#7a654d','#67604a','#6f4f58','#48645d'];
-  const seg=360/opts.length;
-  const gradients=opts.map((_,i)=>`${colors[i%colors.length]} ${i*seg}deg ${(i+1)*seg}deg`).join(',');
+  const geo=wheelGeometry(opts);
+  const gradients=opts.map((_,i)=>`${colors[i%colors.length]} ${geo[i].start}deg ${geo[i].end}deg`).join(',');
   const w=document.getElementById('wheel'); w.style.background=`conic-gradient(${gradients})`;
   const labels=document.getElementById('wheelLabels'); labels.innerHTML=''; labels.style.transform=`rotate(${wheelRotation}deg)`;
   opts.forEach((o,i)=>{
     const d=document.createElement('div');d.className='wheelLabel';
-    const angle=(i+.5)*seg-90;
+    const angle=geo[i].mid-90;
     const r=112;
     const x=Math.cos(angle*Math.PI/180)*r;
     const y=Math.sin(angle*Math.PI/180)*r;
@@ -303,8 +318,8 @@ function renderWheel(opts){
 
 function spinSetup(){
   if(wheelLocked) return; wheelLocked=true; document.getElementById('spinBtn').disabled=true;
-  const idx=Math.floor(rand()*currentWheelOptions.length); const seg=360/currentWheelOptions.length;
-  const target=360-(idx+.5)*seg; wheelRotation += 1440 + target - (wheelRotation%360);
+  const idx=weightedIndex(currentWheelOptions); const geo=wheelGeometry(currentWheelOptions);
+  const target=360-geo[idx].mid; wheelRotation += 1440 + target - (wheelRotation%360);
   document.getElementById('wheel').style.transform=`rotate(${wheelRotation}deg)`;
   document.getElementById('wheelLabels').style.transform=`rotate(${wheelRotation}deg)`;
   setTimeout(()=>{
@@ -334,8 +349,12 @@ function startGame(){
   game.inventory={};
   if(game.birth==='supermarket') game.morale-=5;
   if(game.identity==='chicken'){ game.food=88; game.water=88; game.morale=68; }
-  log(`末日开始。你是一${game.identity==='chicken'?'只':'个'}${idData().short}，出生在${birthData().short}。你什么都没带——第一件物资得自己去找。`);
+  if(game.identity==='cockroach'){ game.food=95; game.water=95; game.morale=76; }
+  game.dayEffect={name:'末日第一天',desc:'没有晨间事件。先自己找第一批物资。',riskMods:{},lootBonus:{},preferredItems:[],waterUseBonus:0,foodUseBonus:0,restBonus:0};
+  game.morningDone=true;
+  log(`末日开始。你是一${identityMeasure()}${idData().short}，出生在${birthData().short}。你什么都没带——第一件物资得自己去找。`);
   if(game.identity==='chicken' && game.trait==='social') log('你是一只社交达人鸡。至少暂时比社交达人蟑螂好一点。');
+  if(game.identity==='cockroach' && game.trait==='social') log('你是一只社交达人蟑螂。开发组对此表示不安。');
   save(); renderGame(); showScreen('game');
 }
 
@@ -347,15 +366,18 @@ function renderGame(){
   document.getElementById('hpVal').textContent=game.hp;document.getElementById('foodVal').textContent=game.food;document.getElementById('waterVal').textContent=game.water;document.getElementById('moraleVal').textContent=game.morale;
   ['hp','food','water','morale'].forEach(k=>document.getElementById(k+'Bar').style.width=game[k]+'%');
   document.getElementById('apVal').textContent=game.actions;
-  document.getElementById('statusline').textContent=game.actions>0?`今天还能行动 ${game.actions} 次。${game.trait==='curious'?' 你的好奇心正在鼓励你做一些不太理智的事。':''}`:'今天的行动力用完了。最好别再折腾。';
-  document.querySelectorAll('.location').forEach(b=>b.disabled=game.actions<=0);
-  document.getElementById('restBtn').disabled=game.actions<=0;
+  const morningLocked=game.day>1 && !game.morningDone;
+  const fx=dayEffect();
+  document.getElementById('statusline').textContent=morningLocked?'🚨 先处理今天的突发事件，再决定去哪。':`今日局势：${fx.name}｜${fx.desc} ${game.actions>0?`还能行动 ${game.actions} 次。`:'行动力已用完。'}${game.trait==='curious'?' 你的好奇心正在鼓励你做一些不太理智的事。':''}`;
+  document.querySelectorAll('.location').forEach(b=>b.disabled=game.actions<=0||morningLocked);
+  document.getElementById('restBtn').disabled=game.actions<=0||morningLocked;
+  document.getElementById('endDayBtn').disabled=morningLocked;
   document.getElementById('inventory').innerHTML=renderInventory();
   bindInventoryButtons();
   document.getElementById('capacityText').textContent=`携带空间：${inventorySlots()} / ${idData().cap} 格`;
   document.getElementById('log').innerHTML=game.log.length?game.log.map(x=>`<div class="logItem"><div class="logDay">DAY ${x.day}</div>${x.text}</div>`).join(''):'<span class="muted">还没有记录。</span>';
-  document.getElementById('gameSummary').innerHTML=[['出生地',birthData().short],['天赋',traitData().short],['搜索次数',game.searches],['贪心次数',game.greedySearches]].map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
-  document.getElementById('specialStatus').textContent=game.identity==='chicken'?`🐔 活鸡价值：${game.chickenValue}/100 · 已下蛋：${game.eggsLaid}`:`👤 人际声誉：${game.reputation>=0?'+':''}${game.reputation}`;
+  document.getElementById('gameSummary').innerHTML=[['出生地',birthData().short],['天赋',traitData().short],['今日局势',dayEffect().name],['搜索次数',game.searches],['贪心次数',game.greedySearches]].map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
+  document.getElementById('specialStatus').textContent=game.identity==='chicken'?`🐔 活鸡价值：${game.chickenValue}/100 · 已下蛋：${game.eggsLaid}`:(game.identity==='cockroach'?`🪳 鞋底逃生：${game.roachStompEscapes} · 跨物种人脉：${game.roachContacts}`:`👤 人际声誉：${game.reputation>=0?'+':''}${game.reputation}`);
   save();
 }
 
@@ -395,13 +417,19 @@ function searchLocation(loc){
   if(game.actions<=0)return;
   game.actions--; game.searches++;
   const def=locationDefs[loc]; const st=locationStatus(loc);
-  pendingSearch={loc,depth:1,risk:Math.max(.02,def.baseRisk+st[1]),status:st[0],rolls:st[2],dangerCheck:true};
+  const fx=dayEffect(); const riskMod=(fx.riskMods&&fx.riskMods[loc])||0;
+  pendingSearch={loc,depth:1,risk:Math.max(.02,def.baseRisk+st[1]+riskMod),status:st[0],rolls:st[2],dangerCheck:true};
   doLootRoll(false);
 }
 
 function lootBatch(loc,rolls){
-  const pool=locationDefs[loc].pool; const result={};
-  for(let i=0;i<rolls;i++){const id=pick(pool); result[id]=(result[id]||0)+1;}
+  const fx=dayEffect();
+  let pool=[...locationDefs[loc].pool];
+  (fx.preferredItems||[]).forEach(id=>{pool.push(id,id);});
+  const bonus=(fx.lootBonus&&fx.lootBonus[loc])||0;
+  if(game.identity==='cockroach' && (loc==='supermarket'||loc==='store')) rolls+=1; // 小体型能搜货架缝隙
+  const result={};
+  for(let i=0;i<Math.max(1,rolls+bonus);i++){const id=pick(pool); result[id]=(result[id]||0)+1;}
   return result;
 }
 
@@ -520,6 +548,25 @@ function leaveSearch(){
 
 function triggerSearchDanger(loc){
   pendingSearch=null;
+  if(loc==='supermarket' && game.identity==='cockroach'){
+    openEvent('👟','脚。',`你从货架底下冲出来时，一个正在抢矿泉水的幸存者后退了一步。
+
+鞋底的阴影盖住了你。`,[
+      {text:'贴地急转！',desc:'飞毛腿和幸运会提高成功率。',fn:()=>{let p=.58+(game.trait==='runner'?.18:0)+(game.trait==='lucky'?.12:0);if(rand()<p){game.roachStompEscapes++;game.morale-=4;addAch('soleescape','《鞋底逃生》 从人类鞋底下保住了三维结构。');log('鞋底落在你旁边。你成功保持了立体。');hideModal();renderGame();}else{finish('啪。','你想去超市搏一把大的。超市也确实给了你一个很大的东西：鞋底。','被幸存者踩死');}}}
+    ]);return;
+  }
+  if(loc==='store' && game.identity==='cockroach'){
+    openEvent('🧴','货架后的喷雾',`你钻进便利店货架后面，发现这里刚被喷过杀虫剂。空气闻起来非常针对你。`,[
+      {text:'立刻撤',fn:()=>{if(chance(.68)){game.morale-=5;log('你以蟑螂速度撤出了杀虫区。');hideModal();renderGame();}else{game.hp-=30;game.morale-=10;log('你吸到了一点杀虫剂。生命 -30。');hideModal();renderGame();checkEnding();}}}
+    ]);return;
+  }
+  if(loc==='farm' && game.identity==='cockroach'){
+    openEvent('🐔','天敌来自意外方向',`你正在谷物旁边大吃特吃，一只鸡突然低头看见了你。
+
+这一次，鸡站在食物链的另一边。`,[
+      {text:'钻进土缝！',fn:()=>{if(chance(.72)){log('鸡啄了个空。你第一次如此尊敬自己的扁平结构。');hideModal();renderGame();}else{game.hp-=28;game.morale-=8;log('你被啄了一下。生命 -28。鸡对此没有任何愧疚。');hideModal();renderGame();checkEnding();}}}
+    ]);return;
+  }
   if(loc==='supermarket' && game.identity==='chicken'){
     openEvent('👁️🍗','有人看见了你',`你正准备从货架旁撤退，一个饿得眼睛发直的幸存者也看见了你。\n\n你突然意识到：在他的物资分类里，你可能不属于“玩家”。`,[
       {text:'扑腾着跑！',desc:'进行逃跑判定。',fn:()=>{let p=.48+(game.trait==='runner'?.18:0)+(game.trait==='lucky'?.12:0); if(rand()<p){game.morale-=8;log('你扑腾出一条鸡生通道，成功逃走。');hideModal();renderGame();}else{finish('今晚加餐','你逃过了货架、抢购和末日，没有逃过别人的晚饭。','被幸存者抓住');}}}
@@ -544,29 +591,130 @@ function dropRandomItem(){ const ids=Object.keys(game.inventory); if(!ids.length
 function randomPostSearchEvent(){
   if(game.identity==='chicken' && game.birth!=='farm' && rand()<.10){game.chickenValue+=8;log('有人远远看见你，居然没有追。你在人类社会的“活鸡价值” +8。');}
   if(game.identity==='human' && rand()<.08){game.reputation+=5;log('回来的路上你顺手帮了一个受伤的人，人际声誉 +5。');}
+  if(game.identity==='cockroach' && game.trait==='social' && rand()<.16){game.roachContacts++;log('你和附近的老鼠完成了一次短暂但有效的跨物种外交。蟑螂人脉 +1。');if(game.roachContacts>=3)addAch('roachnetwork','《人脉比命硬》 一只蟑螂居然真的经营出了关系网。');}
 }
 
 function rest(){
-  if(game.actions<=0)return;game.actions--;game.morale+=12;game.hp+=5;log('你决定不折腾，安静休息了一会儿。士气 +12，生命 +5。');renderGame();
+  if(game.actions<=0)return;game.actions--;const bonus=dayEffect().restBonus||0;game.morale+=12+bonus;game.hp+=5;log(`你决定不折腾，安静休息了一会儿。士气 +${12+bonus}，生命 +5。`);renderGame();
+}
+
+function finishMorning(name,desc,logText){
+  game.morningDone=true;
+  game.dayEffect.name=name;
+  game.dayEffect.desc=desc;
+  if(logText)log(logText);
+  hideModal();renderGame();save();
+}
+function foodIdsInBag(){return ['crackers','grain','canned','egg'].filter(hasItem);}
+function triggerMorningEvent(){
+  if(game.day<=1||game.ending)return;
+  game.dayEffect=freshDayEffect(); game.morningDone=false;
+  const common=[morningWaterRumor,morningSupermarketRush,morningStorm,morningTruck,morningFire,morningQuiet];
+  const identity=game.identity==='human'?[morningHumanNeighbor]:game.identity==='chicken'?[morningChickenProtein,morningChickenCorn]:[morningRoachSpray,morningRoachTrash];
+  pick(common.concat(identity))();
+}
+function morningWaterRumor(){
+  openEvent('📻','停水传言',`天刚亮，广播里有人说今晚可能彻底停水。\n\n没人知道消息是真是假。`,[
+    {text:'今天优先找水',desc:'水更容易出现在搜索结果里。',fn:()=>{game.dayEffect.preferredItems=['water','water'];finishMorning('抢水日','今天搜索更容易找到水。','你决定把找水放在第一位。');}},
+    {text:'趁大家抢水，搜别的',desc:'超市更危险，便利店和农场稍安全。',fn:()=>{game.dayEffect.riskMods={supermarket:.16,store:-.07,farm:-.05};game.dayEffect.lootBonus={store:1,farm:1};finishMorning('声东击西','超市更挤，其他地点反而好搜。','你决定避开抢水人群，去搜被忽略的地方。');}},
+    {text:'不理传言',desc:'保持原计划，但消息如果是真的，今晚会更渴。',fn:()=>{if(rand()<.55){game.dayEffect.waterUseBonus=10;game.flags.waterRumorTrueToday=true;}finishMorning('赌消息是假的','今天行动不受限制，但今晚可能多消耗水分。','你决定不为一条未经证实的广播改计划。');}}
+  ]);
+}
+function morningSupermarketRush(){
+  openEvent('🛒','超市出现抢购潮',`街口不断有人往超市方向跑。\n有人说里面刚补过一次货。`,[
+    {text:'绕开超市',desc:'今天超市很危险，但你保持清醒。',fn:()=>{game.dayEffect.riskMods={supermarket:.28,store:-.04,farm:-.04};game.morale+=3;finishMorning('避开抢购','超市风险大幅升高，其他地点稍安全。','你决定不去和一群焦虑的人抢同一排货架。');}},
+    {text:'趁乱搏一把',desc:'超市物资更多，风险也明显提高。',fn:()=>{game.dayEffect.riskMods={supermarket:.24};game.dayEffect.lootBonus={supermarket:2};finishMorning('抢购潮','超市额外物资 +2，但危险明显提高。','你盯着人群看了几秒：富贵险中求。');}},
+    {text:'先观察再行动',desc:'消耗1行动力，换取更稳的超市搜索。',fn:()=>{game.actions=Math.max(0,game.actions-1);game.dayEffect.riskMods={supermarket:-.10};game.dayEffect.lootBonus={supermarket:1};finishMorning('踩点完成','超市风险降低并额外多一次物资判定，但今天少1行动力。','你花了半天观察出入口。至少不是闭着眼冲进去。');}}
+  ]);
+}
+function morningStorm(){
+  openEvent('🌧️','暴雨预警',`云压得很低。广播提醒今天可能出现强降雨。`,[
+    {text:'先接雨水',desc:'直接补水，但消耗1行动力。',fn:()=>{game.actions=Math.max(0,game.actions-1);game.water=Math.min(100,game.water+24);game.dayEffect.riskMods={farm:.14};finishMorning('先囤雨水','水分 +24；农场今天更危险。','你先想办法接了一些雨水。少跑一趟，少渴一点。');}},
+    {text:'冒雨去搜',desc:'所有地点更危险，但更容易捡到被人放弃的物资。',fn:()=>{game.dayEffect.riskMods={supermarket:.08,store:.08,farm:.10};game.dayEffect.lootBonus={supermarket:1,store:1,farm:1};finishMorning('冒雨捡漏','所有地点危险提高，但搜索额外 +1 物资判定。','别人躲雨，你决定出去捡漏。很难评价。');}},
+    {text:'今天稳一点',desc:'休息收益提高。',fn:()=>{game.dayEffect.restBonus=10;finishMorning('雨天慢下来','今天休息额外恢复10点士气。','你决定不和天气硬碰硬。');}}
+  ]);
+}
+function morningTruck(){
+  openEvent('🚚','物资车侧翻',`两条街外，一辆运输车侧翻了。\n消息已经传开，附近的人都在往那边赶。`,[
+    {text:'立刻去附近搜',desc:'今天所有地点多一次物资判定，但风险 +12%。',fn:()=>{game.dayEffect.riskMods={supermarket:.12,store:.12,farm:.12};game.dayEffect.lootBonus={supermarket:1,store:1,farm:1};finishMorning('物资外溢','搜索额外 +1 物资判定，所有地点风险提高。','你决定跟着物资流向走。人多，东西也多。');}},
+    {text:'等别人抢完再捡漏',desc:'便利店更容易出现遗漏物资。',fn:()=>{game.dayEffect.lootBonus={store:2};game.dayEffect.riskMods={store:-.04};finishMorning('晚点捡漏','便利店额外 +2 物资判定，风险略降。','你没有冲第一波。末日里，慢半拍有时也是策略。');}},
+    {text:'不参与',desc:'士气 +4，今天按原计划。',fn:()=>{game.morale+=4;finishMorning('远离人群','没有额外风险或收益。','你看着远处的人群，决定今天不拿命换热闹。');}}
+  ]);
+}
+function morningFire(){
+  openEvent('🔥','附近起火',`清晨能闻到明显的焦味。几个街区外冒起黑烟。`,[
+    {text:'先撤远一点',desc:'消耗1行动力，今天整体风险稍降。',fn:()=>{game.actions=Math.max(0,game.actions-1);game.dayEffect.riskMods={supermarket:-.05,store:-.05,farm:-.03};finishMorning('主动撤离','今天少1行动力，但搜索风险略降。','你先换了个更安全的位置。活着比准时重要。');}},
+    {text:'趁乱搜物资',desc:'物资 +1，风险 +10%。',fn:()=>{game.dayEffect.riskMods={supermarket:.10,store:.10,farm:.08};game.dayEffect.lootBonus={supermarket:1,store:1,farm:1};finishMorning('火场边缘','搜索额外 +1 物资判定，同时更危险。','你把黑烟理解成了“竞争者暂时减少”。');}},
+    {text:'关好门，等火势过去',desc:'休息收益提高。',fn:()=>{game.dayEffect.restBonus=8;finishMorning('暂避烟火','今天休息额外恢复8点士气。','你决定今天先别当主角。');}}
+  ]);
+}
+function morningQuiet(){
+  openEvent('☀️','难得安静的早晨',`今天没有广播，没有尖叫，也没有人抢东西。\n\n反而有点不习惯。`,[
+    {text:'趁安静走远一点',desc:'物资 +1，风险也小幅提高。',fn:()=>{game.dayEffect.riskMods={supermarket:.05,store:.05,farm:.05};game.dayEffect.lootBonus={supermarket:1,store:1,farm:1};finishMorning('走远一点','搜索额外 +1 物资判定，风险 +5%。','你决定利用这段安静扩大搜索范围。');}},
+    {text:'今天保守一点',desc:'所有地点风险 -5%。',fn:()=>{game.dayEffect.riskMods={supermarket:-.05,store:-.05,farm:-.05};finishMorning('保守日','所有地点风险略降。','末日没有规定每天都必须做大事。');}},
+    {text:'按平常来',fn:()=>{finishMorning('普通的一天','没有额外影响。','你决定不把“无事发生”也解读成阴谋。');}}
+  ]);
+}
+function morningHumanNeighbor(){
+  const foods=foodIdsInBag();
+  openEvent('🚪','邻居来敲门',`邻居说家里的孩子已经一天没吃东西了。\n他没有直接开口要，只是一直看着你的背包。`,[
+    {text:'给一点吃的',desc:foods.length?'消耗1份食物，声誉和士气提高。':'你现在其实没有能给的食物。',fn:()=>{const now=foodIdsInBag();if(now.length){removeItem(pick(now),1);game.reputation+=15;game.morale+=8;finishMorning('帮了邻居','声誉 +15，士气 +8。','你分出了一份食物。这个决定以后也许会回来找你。');}else{game.morale-=3;finishMorning('有心无粮','你没能帮上忙。','你翻了翻空荡荡的背包。双方都沉默了一会儿。');}}},
+    {text:'交换消息',desc:'不送物资，尝试换一些情报。',fn:()=>{if(game.trait==='social'||chance(.55)){game.reputation+=5;game.flags.shelterClue=true;finishMorning('交换情报','获得避难所线索，声誉 +5。','你没有给物资，但和邻居交换了附近的消息。');}else{game.reputation-=3;finishMorning('尴尬谈判','声誉 -3。','对方觉得你在这种时候还想着谈条件。');}}},
+    {text:'拒绝',fn:()=>{game.reputation-=4;finishMorning('关上门','声誉 -4。','你拒绝了。末日里，善意也有库存。');}}
+  ]);
+}
+function morningChickenProtein(){
+  openEvent('👁️🍗','“最近太缺蛋白质了”',`你听见附近几个人类在讨论食物。\n其中一句话是：\n“最近太缺蛋白质了。”\n\n你低头看了看自己。`,[
+    {text:'今天躲远一点',desc:'少1行动力，人类密集地点风险下降。',fn:()=>{game.actions=Math.max(0,game.actions-1);game.dayEffect.riskMods={supermarket:-.14,store:-.10,farm:.06};finishMorning('低调做鸡','少1行动力；超市和便利店风险下降。','你决定今天降低存在感。作为一只鸡，这很合理。');}},
+    {text:'友好地混过去',desc:'社交达人更有优势。',fn:()=>{if(game.trait==='social'||chance(.58)){game.chickenValue+=14;finishMorning('鸡际关系','活鸡价值 +14。','你成功让附近的人暂时把你归类为“认识的鸡”，而不是“食材”。');}else{game.morale-=8;game.dayEffect.riskMods={supermarket:.12,store:.10};finishMorning('被盯上了','士气 -8；人类地点风险升高。','你的跨物种公关失败了。今天最好少在人类面前晃。');}}},
+    {text:'转移去农场方向',desc:'农场更好搜，但捕食风险提高。',fn:()=>{game.dayEffect.lootBonus={farm:2};game.dayEffect.riskMods={farm:.12,supermarket:-.06,store:-.06};finishMorning('回归农业','农场物资 +2，同时农场风险提高。','你决定离人类远一点。然后想起野外也有别的嘴。');}}
+  ]);
+}
+function morningChickenCorn(){
+  openEvent('🌽','路边的玉米粒',`路边散着一串新鲜玉米粒，一直延伸到墙角。\n作为一只鸡，你很难假装没看见。`,[
+    {text:'直接吃',desc:'快速补饱食，但可能是诱饵。',fn:()=>{if(chance(.72)){game.food=Math.min(100,game.food+26);finishMorning('免费的早餐','饱食 +26。','你吃掉了玉米粒。今天命运难得没有收费。');}else{game.morale-=10;game.hp-=8;finishMorning('差点被抓','生命 -8，士气 -10。','墙角突然伸出一只手。你扑腾着跑了。');}}},
+    {text:'先观察',desc:'不吃，但今天农场风险下降。',fn:()=>{game.dayEffect.riskMods={farm:-.12};finishMorning('谨慎的鸡','农场风险下降。','你盯了半天，决定鸡也可以拥有风险意识。');}},
+    {text:'不碰',fn:()=>{game.morale+=3;finishMorning('拒绝诱惑','士气 +3。','你从玉米粒旁边走过去。非常反鸡性。');}}
+  ]);
+}
+function morningRoachSpray(){
+  openEvent('🧴','全楼消杀通知',`门缝外传来脚步声。\n有人提着杀虫喷雾，说今天要“彻底处理一下卫生问题”。\n\n你就是那个卫生问题。`,[
+    {text:'躲进管道',desc:'少1行动力，室内搜索风险下降。',fn:()=>{game.actions=Math.max(0,game.actions-1);game.dayEffect.riskMods={supermarket:-.10,store:-.12};game.morale-=3;finishMorning('管道避难','少1行动力；超市和便利店风险下降。','你在管道里待了半天。尊严不重要，呼吸比较重要。');}},
+    {text:'冲出去',desc:'今天农场更容易搜，但野外有别的危险。',fn:()=>{game.dayEffect.lootBonus={farm:1};game.dayEffect.riskMods={farm:.07,supermarket:.08,store:.08};finishMorning('逃离消杀区','农场物资 +1；室内地点风险升高。','你决定离化学武器远一点。');}},
+    {text:'我就不信能喷到我',desc:'赌一次即时判定。',fn:()=>{if(chance(.62)){game.morale+=8;finishMorning('命硬','士气 +8。','喷雾从你头顶过去了。你开始产生不必要的自信。');}else{game.hp-=34;game.morale-=12;finishMorning('喷到了','生命 -34，士气 -12。','事实证明，杀虫剂的名字没有骗人。');checkEnding();}}}
+  ]);
+}
+function morningRoachTrash(){
+  openEvent('🗑️','垃圾桶没盖',`楼下餐馆的垃圾桶今天居然没盖。\n你从很远就闻到了食物。`,[
+    {text:'立刻冲过去',desc:'饱食大幅恢复，但有踩踏风险。',fn:()=>{if(chance(.76)){game.food=Math.min(100,game.food+38);finishMorning('蟑螂自助餐','饱食 +38。','你抵达了末日五星级自助餐厅。');}else{game.hp-=24;game.morale-=8;finishMorning('差点变平面','生命 -24，士气 -8。','你冲得太兴奋，差点被路过的人踩成二维生物。');}}},
+    {text:'等人少一点再去',desc:'少量补饱食，安全得多。',fn:()=>{game.food=Math.min(100,game.food+18);finishMorning('文明就餐','饱食 +18。','你等人走了再去。会社交不代表要和鞋底社交。');}},
+    {text:'不去',desc:'今天便利店缝隙搜索更有优势。',fn:()=>{game.dayEffect.lootBonus={store:2};finishMorning('另找饭堂','便利店额外 +2 物资判定。','你拒绝了垃圾桶的召唤。非常有原则。');}}
+  ]);
 }
 
 function endDay(){
+  if(game.day>1 && !game.morningDone)return;
   // Chicken egg system
   if(game.identity==='chicken' && game.day-game.lastEggDay>=3 && game.food>=50 && game.water>=40 && rand()<.55){
     if(addItem('egg',1)){game.eggsLaid++;game.lastEggDay=game.day;game.chickenValue+=8;log('你下了一颗蛋。鸡生生产力 +1。');}
   }
   const d=idData(); let foodUse=d.foodUse, waterUse=d.waterUse;
   if(game.trait==='smallappetite') foodUse=Math.round(foodUse*.75);
+  foodUse+=(dayEffect().foodUseBonus||0); waterUse+=(dayEffect().waterUseBonus||0);
   game.food-=foodUse;game.water-=waterUse;
+  if(game.flags.waterRumorTrueToday){log('那条停水消息是真的。你今晚比平时更缺水。');delete game.flags.waterRumorTrueToday;}
   if(game.food<=20)game.hp-=game.food<=0?15:8;
   if(game.water<=20)game.hp-=game.water<=0?25:12;
   if(game.food>45 && game.water>45)game.morale+=2;
   game.day++;
-  if(game.day>1) nightlyEvent();
   if(game.ending)return;
   game.actions=2;
+  game.morningDone=false;
+  game.dayEffect=freshDayEffect();
   log(`天亮了。你活到了第 ${game.day} 天。`);
-  renderGame();checkEnding();
+  renderGame();
+  if(checkEnding())return;
+  setTimeout(triggerMorningEvent,120);
 }
 
 const nightlyEvents = [
@@ -619,12 +767,18 @@ function shelterRumor(){
   game.flags.shelterClue=true;log('你听说附近有人建立了临时避难所。这个消息可能是真的。');renderGame();
 }
 function identityNightEvent(){
-  if(game.identity==='chicken') chickenEvent(); else humanEvent();
+  if(game.identity==='chicken') chickenEvent(); else if(game.identity==='cockroach') roachEvent(); else humanEvent();
 }
 function humanEvent(){
   openEvent('👤','陌生幸存者',`一个疲惫的幸存者想用一瓶水换你的一份食物。`,[
     {text:'交易',fn:()=>{if(hasItem('crackers')){removeItem('crackers');addItem('water');game.reputation+=6;log('交易完成。对方记住了你的脸。声誉 +6。');}else{log('你翻遍背包，发现自己根本没有能交易的饼干。场面有点尴尬。');}hideModal();renderGame();}},
     {text:'拒绝',fn:()=>{log('你拒绝了交易。对方没说什么。');hideModal();renderGame();}}
+  ]);
+}
+function roachEvent(){
+  openEvent('🪳','夜间社交',`墙角传来一点动静。\n你发现两只老鼠和另一只蟑螂正在分享一块饼干碎屑。`,[
+    {text:'加入',desc:'社交达人有明显优势。',fn:()=>{if(game.trait==='social'||chance(.55)){game.roachContacts++;game.food=Math.min(100,game.food+12);log('你成功加入了末日墙角社交局。人脉 +1，饱食 +12。');}else{game.morale-=4;log('大家沉默地看了你一眼。你第一次体验蟑螂社交失败。');}hideModal();renderGame();}},
+    {text:'路过',fn:()=>{log('你决定今晚不拓展人脉。');hideModal();renderGame();}}
   ]);
 }
 function chickenEvent(){
@@ -656,6 +810,7 @@ function checkEnding(){
   if(game.day>=15){
     if(game.identity==='human' && game.reputation>=20){finish('临时社区','你和几名幸存者建立了一个勉强能运转的小社区。至少现在，大家愿意一起活。','V0.1 Demo 稳定结局');}
     else if(game.identity==='chicken' && game.chickenValue>=65){finish('鸡生赢家','你成功找到了稳定食物和一个没有立刻想吃你的地方。对于一只鸡来说，已经非常优秀。','V0.1 Demo 稳定结局');}
+    else if(game.identity==='cockroach'){finish('世界毁灭与你关系不大','人类文明已经乱成一团，而你仍然在墙缝里认真活着。说不定这才是稳定。','蟑螂 Demo 稳定结局');}
     else finish('活过测试期','你活过了 V0.1 的 15 天测试期。开发组暂时还没写更多灾难来折磨你。','Demo 达成');
     return true;
   }
@@ -673,7 +828,7 @@ function finish(title,quote,cause){
 }
 
 function copyReport(){
-  const text=`《末日转盘 V0.1.3》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
+  const text=`《末日转盘 V0.1.4》\n身份：${idData().short}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}\n${game.ending.quote}`;
   copyText(text);
 }
 function copyText(t){ if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast();}).catch(function(){fallbackCopy(t);});} else fallbackCopy(t); }
@@ -696,7 +851,7 @@ function bindUI(){
   var runtime=document.getElementById('runtimeNotice');
   if(runtime){runtime.className='runtimeNotice ready';runtime.textContent='✅ 游戏脚本已启动，可以直接玩。';setTimeout(function(){runtime.style.opacity='.55';},2200);}
   document.getElementById('newGameBtn').addEventListener('click',newGame);
-  document.getElementById('continueBtn').addEventListener('click',function(){game=loadSave();if(game){renderGame();showScreen('game');}});
+  document.getElementById('continueBtn').addEventListener('click',function(){game=loadSave();if(game){renderGame();showScreen('game');if(game.day>1&&!game.morningDone)setTimeout(triggerMorningEvent,120);}});
   document.getElementById('spinBtn').addEventListener('click',function(){
     var b=document.getElementById('spinBtn');
     if(b.getAttribute('data-mode')==='next'){b.setAttribute('data-mode','spin');setupNext();return;}
@@ -710,7 +865,7 @@ function bindUI(){
   document.getElementById('copyReportBtn').addEventListener('click',copyReport);
   document.getElementById('debugTop').addEventListener('click',debug);
   document.getElementById('resetTop').addEventListener('click',resetAll);
-  document.getElementById('modal').addEventListener('click',function(e){if(e.target.id==='modal')hideModal();});
+  document.getElementById('modal').addEventListener('click',function(e){if(e.target.id==='modal' && !(game&&game.started&&game.day>1&&!game.morningDone))hideModal();});
   initHome();
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',bindUI);}else{bindUI();}
