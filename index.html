@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.2.2</title>
+<title>末日转盘 V0.2.3</title>
 <style>
   :root{
     --bg:#11130f;
@@ -122,7 +122,7 @@
   .swapHint{font-size:12px;color:#9da590;margin-top:7px;line-height:1.55}
   .contributionList{display:grid;gap:6px;margin-top:7px}.contribution{padding:7px 9px;border-radius:9px;background:#b7c6aa;font-size:12px;font-weight:750;line-height:1.45}
 
-  /* V0.2.2 — 可见住所 / 主动加固 */
+  /* V0.2.3 — 高危深层探索 / 终局路线 */
   .shelterStrip{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0 12px;padding:12px 13px;border-radius:14px;background:#1b201a;border:1px solid #3a4435}
   .shelterInfo{min-width:0}.shelterEyebrow{font-size:10px;font-weight:900;letter-spacing:.08em;color:#9ca690;margin-bottom:4px}.shelterMain{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.shelterMain strong{font-size:15px}.shelterStars{font-weight:900;letter-spacing:.08em;color:var(--accent)}.shelterDesc{font-size:11px;color:#aeb6a3;line-height:1.45;margin-top:4px}.shelterTemp{color:#d9c487;font-weight:800}
   .shelterAction{flex:0 0 auto;min-width:116px;padding:10px 11px;border-radius:11px;border:1px solid #6a5d39;background:#2d2a20;color:#f1da91;font-weight:900;cursor:pointer}.shelterAction small{display:block;color:#aeb19e;font-size:9px;font-weight:700;margin-top:3px}.shelterAction:disabled{opacity:.42;cursor:not-allowed}
@@ -135,7 +135,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.2.2</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.2.3</span></div>
     <div class="topbarTools">
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -151,7 +151,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.2.2：住所玩法扶正版。落脚点防护现在可见、可主动加固；胶带和撬棍能真正改善住所，极寒与浓烟结算会明确显示住所贡献。</div>
+      <div class="tinyNote">V0.2.3：高危探索与终局路线版。手电筒+电池可进入黑暗深层区域，稀有资源主要来自高风险场景；活到第10天只是进入终局，找到一条真正的活路才算通关。</div>
     </div>
   </section>
 
@@ -203,13 +203,13 @@
 
     <div class="playStack">
       <div id="tutorialCard" class="tutorialCard">
-        <div class="tutorialTitle">第一次活末日？这五件事先看一眼 😑</div>
+        <div class="tutorialTitle">第一次活末日？这六件事先看一眼 😑</div>
         <div class="tutorialSteps">
           <div class="tutorialStep"><strong>① 先看今天发生什么</strong><br/>征兆、灾难和地图变化都可能改变今天的优先级。</div>
           <div class="tutorialStep"><strong>② 再选行动</strong><br/>每天行动次数有限；DAY 3 后搜索开始可能遇到致命选择。</div>
-          <div class="tutorialStep"><strong>③ 搜到东西要取舍</strong><br/>物资可带走或现场使用。稀有物资不一定立刻用，但可能在关键时刻救命。</div>
+          <div class="tutorialStep"><strong>③ 搜到东西要取舍</strong><br/>普通地点主要提供生存物资。真正的稀有资源，往往藏在红色地点和需要工具才能进去的深层区域。</div>
           <div class="tutorialStep"><strong>④ 背包按“格”计算</strong><br/>毯子、高级急救包等会占 2 格；满了以后要腾出足够空间，不一定只丢一件。</div>
-          <div class="tutorialStep"><strong>⑤ 住所也会决定你能不能活</strong><br/>落脚点有防护等级。找到胶带或撬棍后，可以主动花 1 行动力加固住所。</div>
+          <div class="tutorialStep"><strong>⑤ 住所也会决定你能不能活</strong><br/>落脚点有防护等级。找到胶带或撬棍后，可以主动花 1 行动力加固住所。</div><div class="tutorialStep"><strong>⑥ 活到第10天还不算赢</strong><br/>第10天只会给你最后一次机会。撤离、固守或加入据点——至少准备出一条真正能走的路。</div>
         </div>
         <button type="button" id="tutorialDismissBtn" class="tutorialDismiss">知道了，不要再教我 →</button>
       </div>
@@ -298,9 +298,9 @@
 <div id="toast" class="toast">已复制</div>
 
 <script>
-const VERSION = '0.2.2';
-const SAVE_KEY = 'doomsdayWheel_v022_save';
-const TUTORIAL_KEY = 'doomsdayWheel_v022_tutorial_seen';
+const VERSION = '0.2.3';
+const SAVE_KEY = 'doomsdayWheel_v023_save';
+const TUTORIAL_KEY = 'doomsdayWheel_v023_tutorial_seen';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
 
 const identities = [
@@ -336,34 +336,34 @@ const items = {
   water:{name:'饮用水', icon:'💧', size:1, rarity:'common', usable:true, use:(s)=>{s.water=Math.min(100,s.water+35);return '喝掉一瓶水，水分 +35。';}},
   crackers:{name:'饼干', icon:'🍪', size:1, rarity:'common', usable:true, use:(s)=>{s.food=Math.min(100,s.food+24);return '吃掉饼干，饱食 +24。';}},
   grain:{name:'谷物', icon:'🌾', size:1, rarity:'common', usable:true, use:(s)=>{const gain=s.identity==='chicken'?32:(s.identity==='cockroach'||s.identity==='mouse'?24:16);s.food=Math.min(100,s.food+gain);return s.identity==='chicken'?'啄了一阵谷物。非常专业。饱食 +32。':((s.identity==='cockroach'||s.identity==='mouse')?'在谷物碎屑里开了自助餐。饱食 +24。':'吃了点干巴巴的谷物，饱食 +16。');}},
-  canned:{name:'罐头', icon:'🥫', size:1, rarity:'common', usable:true, use:(s)=>{if(s.identity==='human' && !hasPossession('opener')) return '你盯着罐头。罐头也盯着你。没有开罐器。'; if(s.identity==='chicken') return '你是一只鸡。你对金属罐头暂时没有解决方案。'; if(s.identity==='cockroach'||s.identity==='mouse') return `你是一只${idData().short}。罐头是有食物的堡垒，但你进不去。`; s.food=Math.min(100,s.food+42);return '终于把罐头弄开了，饱食 +42。';}},
+  canned:{name:'罐头', icon:'🥫', size:1, rarity:'common', usable:true, use:(s)=>{if(s.identity!=='human') return `你是一只${idData().short}。面对完整密封的罐头，你暂时没有开罐方案。`; if(!hasItem('opener')) return '你盯着罐头。罐头也盯着你。需要随身携带开罐器。'; const before=s.food;s.food=Math.min(100,s.food+42);return `终于把罐头弄开了，饱食 ${before} → ${s.food}。`;}},
   opener:{name:'开罐器', icon:'🔧', size:.5, rarity:'common', usable:false},
   tape:{name:'胶带', icon:'🧻', size:.5, rarity:'common', usable:false},
-  candles:{name:'生日蜡烛', icon:'🕯️', size:.5, rarity:'common', usable:false},
+  candles:{name:'生日蜡烛', icon:'🕯️', size:.5, rarity:'common', usable:true, note:'可以直接点一根。没什么战略价值，但末日里一点光也算东西。', use:(s)=>{const before=s.morale;s.morale=Math.min(100,s.morale+12);return `你点亮了一根生日蜡烛。士气 ${before} → ${s.morale}。`; }},
   soap:{name:'洗洁精', icon:'🧴', size:1, rarity:'common', usable:false},
   medkit:{name:'急救包', icon:'🩹', size:1, rarity:'uncommon', usable:true, use:(s)=>{if(s.identity==='cockroach') return '你围着急救包转了一圈。它没有蟑螂尺寸的说明书。';s.hp=Math.min(100,s.hp+35);if(s.injury>0){s.injury--;return '处理了伤口，生命 +35，伤势减轻。';}return '处理了一下伤口，生命 +35。';}},
   blanket:{name:'保暖毯', icon:'🧣', size:2, rarity:'uncommon', usable:false, note:'无需手动使用；遇到极寒时会自动提供基础保温。但如果住所太差，一条毯子不一定够。'},
   purifier:{name:'净水工具', icon:'🚰', size:1, rarity:'uncommon', usable:false},
-  flashlight:{name:'手电筒', icon:'🔦', size:1, rarity:'uncommon', usable:false},
-  battery:{name:'电池', icon:'🔋', size:.5, rarity:'uncommon', usable:false},
+  flashlight:{name:'手电筒', icon:'🔦', size:1, rarity:'uncommon', usable:false, note:'与随身电池组合后，可进入部分完全无光的高危深层区域。'},
+  battery:{name:'电池', icon:'🔋', size:.5, rarity:'uncommon', usable:false, note:'为手电筒或收音机供电。进入黑暗深层区域通常会消耗 1 节。'},
   crowbar:{name:'撬棍', icon:'🛠️', size:1.5, rarity:'uncommon', usable:false},
   egg:{name:'鸡蛋', icon:'🥚', size:1, rarity:'common', usable:true, use:(s)=>{const gain=(s.identity==='cockroach'||s.identity==='mouse')?34:22;s.food=Math.min(100,s.food+gain);return s.identity==='chicken'?'……你选择吃掉了自己的蛋。末日没有伦理课。饱食 +22。':((s.identity==='cockroach'||s.identity==='mouse')?'你找到了蛋壳裂缝。豪华自助餐，饱食 +34。':'吃掉鸡蛋，饱食 +22。');}},
   medicalcase:{name:'高级急救包', icon:'🧰', size:2, rarity:'rare', usable:true, note:'随身携带时，可在部分致命外伤事件中自动救你一次。', use:(s)=>{s.hp=Math.min(100,s.hp+60);s.injury=0;return '你用掉了高级急救包。生命 +60，伤势清除。它如果留在背包里，本来也能在部分致命外伤里自动救你一次。';}},
-  radio:{name:'便携收音机', icon:'📻', size:1, rarity:'rare', usable:false},
+  radio:{name:'便携收音机', icon:'📻', size:1, rarity:'rare', usable:true, note:'消耗 1 节随身电池，可提前听到下一场大型灾难的模糊情报。'},
   gasmask:{name:'防烟面罩', icon:'😷', size:1, rarity:'rare', usable:false},
   routeMap:{name:'撤离路线图', icon:'🗺️', size:.5, rarity:'rare', usable:false},
   carKey:{name:'陌生车钥匙', icon:'🔑', size:.5, rarity:'rare', usable:false}
 };
 
 const locationDefs = {
-  supermarket:{name:'超市', icon:'🛒', baseRisk:.13, pools:{common:['water','water','canned','crackers','crackers','opener','soap'],uncommon:['battery','flashlight','tape','blanket','purifier','medkit'],rare:['radio','medicalcase','routeMap']}},
-  store:{name:'便利店', icon:'🏪', baseRisk:.09, pools:{common:['water','crackers','crackers','canned','candles','soap'],uncommon:['battery','flashlight','tape','medkit'],rare:['radio','routeMap','carKey']}},
-  pharmacy:{name:'药店', icon:'💊', baseRisk:.12, pools:{common:['water','soap','tape'],uncommon:['medkit','medkit','battery','blanket'],rare:['medicalcase','gasmask','radio']}},
+  supermarket:{name:'超市', icon:'🛒', baseRisk:.13, pools:{common:['water','water','canned','crackers','crackers','opener'],uncommon:['battery','flashlight','tape','blanket','purifier','medkit'],rare:['radio','medicalcase','routeMap']}},
+  store:{name:'便利店', icon:'🏪', baseRisk:.09, pools:{common:['water','crackers','crackers','canned','candles'],uncommon:['battery','flashlight','tape','medkit'],rare:['radio','routeMap','carKey']}},
+  pharmacy:{name:'药店', icon:'💊', baseRisk:.12, pools:{common:['water','tape'],uncommon:['medkit','medkit','battery','blanket'],rare:['medicalcase','gasmask','radio']}},
   school:{name:'学校', icon:'🏫', baseRisk:.10, pools:{common:['water','crackers','candles','tape'],uncommon:['blanket','battery','flashlight','medkit'],rare:['radio','routeMap','medicalcase']}},
   gasstation:{name:'加油站', icon:'⛽', baseRisk:.16, pools:{common:['water','crackers','battery','canned'],uncommon:['flashlight','tape','crowbar'],rare:['carKey','radio','gasmask','routeMap']}},
   farm:{name:'农场', icon:'🌾', baseRisk:.11, pools:{common:['grain','grain','water','egg'],uncommon:['blanket','tape','battery','purifier'],rare:['medicalcase','routeMap','radio']}},
   park:{name:'公园', icon:'🌳', baseRisk:.08, pools:{common:['water','grain','candles'],uncommon:['blanket','tape','flashlight'],rare:['routeMap','radio']}},
-  warehouse:{name:'仓库', icon:'📦', baseRisk:.18, pools:{common:['tape','battery','candles','soap'],uncommon:['flashlight','blanket','crowbar','purifier'],rare:['gasmask','medicalcase','radio','carKey']}}
+  warehouse:{name:'仓库', icon:'📦', baseRisk:.18, pools:{common:['tape','battery','candles'],uncommon:['flashlight','blanket','crowbar','purifier'],rare:['gasmask','medicalcase','radio','carKey']}}
 };
 
 const locationEvolution = {
@@ -428,7 +428,7 @@ function defaultGame(){
     roachStompEscapes:0, roachContacts:0, dayEffect:null, morningDone:true,
     dangerFaced:0, dangerChoices:0, rescues:0, bestLoot:'无', ending:null, deathInfo:null, lastDamage:null, started:false, injury:0, identityCard:null,
     shelterUpgrade:0, shelterTempBoost:0, shelterTempUntilDay:0, shelterCrowbarUsed:false, shelterSealed:false,
-    crisisPlan:[], resolvedCrises:[], cluesSeen:{}, lastCrisis:null, mapChanges:[]
+    crisisPlan:[], resolvedCrises:[], cluesSeen:{}, lastCrisis:null, mapChanges:[], deepZones:{}, finalRoute:null, finalTriggered:false, radioIntelType:null, radioIntelDay:null
   };
 }
 
@@ -528,7 +528,7 @@ function worldPhase(day=game.day){
   if(day<=2)return {stage:0,name:'混乱初期',label:'多数地方还在勉强维持原来的样子',risk:0};
   if(day<=4)return {stage:1,name:'供应断裂',label:'抢购、断供和关闭开始连成一片',risk:.06};
   if(day<=7)return {stage:2,name:'城市失序',label:'熟悉的地点正在一个个失去原来的功能',risk:.14};
-  return {stage:3,name:'最后关头',label:'还能正常使用的地方已经不多了',risk:.24};
+  return {stage:3,name:'最后关头',label:'还能正常使用的地方已经不多了。你需要开始准备一条真正的出路',risk:.24};
 }
 function currentMaxActions(){return game.injury>=2?1:2}
 function foodStock(){return totalItemCount('crackers')+totalItemCount('grain')+totalItemCount('canned')+totalItemCount('egg')}
@@ -751,7 +751,8 @@ function renderGame(){
   document.getElementById('gameSummary').innerHTML=[['身份档案',(game.identityCard||makeIdentityCard())?.title||'未命名'],['出生地',birthData().short],['住所防护',`${shelterStars()} ${shelterLabel()}`],['天赋',traitData().short],['今日局势',dayEffect().name],['身体状态',injuryLabel()],['搜索次数',game.searches]].map(r=>`<div class="summaryRow"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('');
   document.getElementById('gameArchiveCard').innerHTML=renderGameArchiveCard();
   const baseSpecial=game.identity==='chicken'?`🐔 活鸡价值：${game.chickenValue}/100 · 已下蛋：${game.eggsLaid}`:(game.identity==='cockroach'?`🪳 鞋底逃生：${game.roachStompEscapes} · 跨物种人脉：${game.roachContacts}`:(game.identity==='human'?`👤 人际声誉：${game.reputation>=0?'+':''}${game.reputation}`:`${idData().label} · 身份特性正在影响探索风险与携带能力`));
-  document.getElementById('specialStatus').textContent=`${baseSpecial} · 🩹 ${injuryLabel()}`;
+  const intel=game.radioIntelType?` · 📻 已掌握${({water:'断水',cold:'极寒',unrest:'骚乱',smoke:'浓烟'}[game.radioIntelType]||'灾难')}情报`:'';
+  document.getElementById('specialStatus').textContent=`${baseSpecial} · 🩹 ${injuryLabel()}${intel}`;
   save();
 }
 
@@ -771,13 +772,35 @@ function bindInventoryButtons(){
   document.querySelectorAll('.takeStoredBtn').forEach(function(b){b.addEventListener('click',function(){moveToBag(b.getAttribute('data-item'));});});
 }
 
+function useRadio(){
+  if(!hasItem('radio'))return;
+  if(!hasItem('battery')){const msg='收音机没电。需要把电池带在随身背包里。';log(msg);toast('🔋 需要随身电池');renderGame();return;}
+  const next=(game.crisisPlan||[]).filter(c=>!(game.resolvedCrises||[]).includes(c.day)&&c.day>=game.day).sort((a,b)=>a.day-b.day)[0];
+  removeItem('battery',1);
+  if(!next){log('你给收音机装上电池，但频道里只剩断断续续的杂音。');toast('没有听到新的有效情报');renderGame();return;}
+  game.radioIntelType=next.type; game.radioIntelDay=next.day;
+  const clue={water:'广播反复提到供水压力异常，几个街区正在抢装储水容器。',cold:'频道里不断重复低温预警，夜间温度可能远低于正常水平。',unrest:'广播要求居民避开主要街口，几处物资点已经发生冲突。',smoke:'频道里提到城区火点增加，并提醒居民关窗、减少外出。'}[next.type];
+  log(`你消耗 1 节电池收听广播：${clue}`);
+  openEvent('📻','终于听清了一段广播',`${clue}
+
+你不知道它会在哪一天真正砸下来，但这条情报值得记住。`,[{text:'记住这条情报',fn:()=>{hideModal();renderGame();save();}}]);
+}
+function itemUseBlocked(id){
+  if(id==='water'&&game.water>=95)return '你现在并不缺水。饮用水没有消耗。';
+  if(['crackers','grain','canned','egg'].includes(id)&&game.food>=95)return '你现在已经很饱了。食物没有消耗。';
+  if(['medkit','medicalcase'].includes(id)&&game.hp>=100&&game.injury===0)return '你现在没有需要处理的伤势。医疗物资没有消耗。';
+  if(id==='candles'&&game.morale>=95)return '你现在的士气已经很高。先把蜡烛留着。';
+  return '';
+}
 function useItem(id){
   if(!hasItem(id))return; const it=items[id]; if(!it?.usable)return;
-  const before=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
+  if(id==='radio'){useRadio();return;}
+  const blocked=itemUseBlocked(id);if(blocked){log(blocked);toast(blocked);renderGame();return;}
+  const before=JSON.stringify({hp:game.hp,food:game.food,water:game.water,morale:game.morale,injury:game.injury});
   const msg=it.use(game);
-  const after=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
-  if(before!==after) removeItem(id,1);
-  log(msg); renderGame();
+  const after=JSON.stringify({hp:game.hp,food:game.food,water:game.water,morale:game.morale,injury:game.injury});
+  if(before!==after){removeItem(id,1);toast(msg);}else{toast(msg||'现在用不上。');}
+  log(msg); renderGame();save();
 }
 
 function rarityMeta(id){
@@ -995,27 +1018,97 @@ function searchLocation(loc){
 function openSearchApproach(){
   const ps=pendingSearch;if(!ps)return;const def=locationDefs[ps.loc],st=ps.state;
   const c=document.getElementById('modalCard');
-  c.innerHTML=`<div class="modalIcon">${def.icon}</div><h2>${def.name} · ${st.label}</h2><p>${st.desc}\n\n你准备怎么搜？越往里面走，留下来的东西通常越好，代价也很直接。</p><div class="searchApproach"><button type="button" class="approachBtn safe" data-approach="quick"><strong>快速搜一圈</strong><small>风险较低 · 常见物资为主</small></button><button type="button" class="approachBtn" data-approach="careful"><strong>仔细翻找</strong><small>风险中等 · 进阶物资机会提高</small></button><button type="button" class="approachBtn hot" data-approach="deep"><strong>往深处走</strong><small>高风险 · 稀有资源明显提高</small></button></div>`;
+  c.innerHTML=`<div class="modalIcon">${def.icon}</div><h2>${def.name} · ${st.label}</h2><p>${st.desc}\n\n你准备怎么搜？越往里面走，留下来的东西通常越好，代价也很直接。</p><div class="searchApproach"><button type="button" class="approachBtn safe" data-approach="quick"><strong>快速搜一圈</strong><small>风险较低 · 常见物资为主</small></button><button type="button" class="approachBtn" data-approach="careful"><strong>仔细翻找</strong><small>风险中等 · 进阶物资机会提高</small></button><button type="button" class="approachBtn hot" data-approach="deep"><strong>往深处走</strong><small>高风险 · 可能发现需要照明才能进入的深层区域</small></button></div>`;
   c.querySelectorAll('[data-approach]').forEach(b=>b.onclick=()=>beginSearchApproach(b.getAttribute('data-approach')));
   showModal();
 }
+function darkZoneEligible(loc){
+  const ps=pendingSearch;if(!ps||game.day<3||ps.searchMode!=='深入搜索')return false;
+  if(game.deepZones&&game.deepZones[loc])return false;
+  const tier=ps.state?.tier||'green';
+  return ['orange','red'].includes(tier)&&['supermarket','store','pharmacy','school','gasstation','warehouse'].includes(loc);
+}
+function darkZoneDescription(loc){
+  return {
+    supermarket:'后仓最里面有一道半开的防火门。门后完全没有照明，地上散着没拆封的箱子。',
+    store:'后仓尽头还有一间没有窗的小库房。卷帘门卡住了一半，里面黑得看不见地面。',
+    pharmacy:'储药间后面还有一道员工通道。应急灯已经熄灭，里面可能还有没来得及搬走的药。',
+    school:'地下器材室的门开着。楼梯下面一点光都没有，墙边堆着避难物资箱。',
+    gasstation:'维修间后面连着地下储藏间。里面没有照明，门边却能看到被翻动过的箱子。',
+    warehouse:'货架后面还有一条通往地下库位的坡道。下面全黑，但墙上贴着医疗与应急物资标识。'
+  }[loc]||'更深处还有一片完全没有照明的区域。';
+}
+function makeDarkZoneLoot(loc,bonusRare=0){
+  const def=locationDefs[loc],result={};
+  const rarePool=(def.pools.rare||[]).filter(Boolean),uncommonPool=(def.pools.uncommon||[]).filter(Boolean);
+  const rareId=pick(rarePool);if(rareId)result[rareId]=(result[rareId]||0)+1;
+  for(let i=0;i<bonusRare;i++){const x=pick(rarePool);if(x)result[x]=(result[x]||0)+1;}
+  const u=pick(uncommonPool);if(u)result[u]=(result[u]||0)+1;
+  return result;
+}
+function resolveDarkZoneLoot(loc,bonusRare=0,note='你慢慢把能照到的角落搜了一遍。'){
+  const ps=pendingSearch;if(!ps)return;
+  game.deepZones=game.deepZones||{};game.deepZones[loc]=true;
+  ps.darkZone=true;ps.searchMode='无光深层区域';ps.currentDangerProb=Math.max(ps.currentDangerProb||0,.58);
+  ps.currentLoot=makeDarkZoneLoot(loc,bonusRare);
+  log(`${note} 这里的东西明显比外面完整。`);
+  renderLootChoice();
+}
+function enterDarkZone(loc){
+  const ps=pendingSearch;if(!ps)return;
+  consumePossession('battery',1);
+  const warning='手电光至少让你看见了风险。至于看见以后还要不要贪，是另一回事。';
+  const choices=[
+    {text:'贴着墙慢慢搜',desc:'保守进入。保证找到 1 件稀有资源，但不继续赌最深处。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,0,'你用手电确认了地面和退路，贴着墙慢慢往里搜。');}},
+    {text:'直接冲最里面的封闭柜',desc:'可能多拿 1 件稀有资源；也可能把“深处”变成你的永久住址。',fn:()=>{hideModal();if(chance(.46)){game.hp-=18;game.injury=Math.max(game.injury,1);resolveDarkZoneLoot(loc,1,'你硬闯到最里面，带着伤把封闭柜里的东西拖了出来。');}else{fatalExploration('黑暗深处没有第二次机会','手电照见了危险，你还是选择直接冲向最里面的柜子。退路在混乱里被切断。','深层探索事故',{trauma:true,missing:['更谨慎的深层探索判断'],couldHaveSaved:'手电已经帮你看见了风险。真正缺的是见好就收。',context:'无光深层区域里存在明显障碍和不稳定结构，你仍选择直接冲最深处。'});}}}
+  ];
+  if(hasItem('crowbar'))choices.splice(1,0,{text:'用撬棍慢慢开最里面的柜子',desc:'工具路线：风险低很多，并额外获得 1 次稀有资源判定。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,1,'你用撬棍一点点打开封闭柜，没有把整片结构一起撬下来。');}});
+  openEvent('🔦','光照到了一些不该摸黑碰的东西',`${darkZoneDescription(loc)}
+
+${warning}`,choices);
+}
+function maybeOfferDarkZone(loc,continuation){
+  if(!darkZoneEligible(loc))return false;
+  const gear=hasItem('flashlight')&&hasItem('battery');
+  const c=document.getElementById('modalCard');
+  if(gear){
+    openEvent('🌑','里面还有一层',`${darkZoneDescription(loc)}
+
+你背包里的手电和电池终于有了一个非常具体的用途。`,[
+      {text:'装上电池，进去',desc:'消耗 1 节电池。这里是稀有资源的主要来源之一，同时也是高危区域。',fn:()=>{hideModal();enterDarkZone(loc);}},
+      {text:'省下电池，只搜外面',desc:'放弃深层稀有资源，继续普通搜索。',fn:()=>{hideModal();continuation();}}
+    ]);
+  }else{
+    const lack=!hasItem('flashlight')?'手电筒':(!hasItem('battery')?'随身电池':'照明工具');
+    openEvent('🌑','里面黑得什么都看不见',`${darkZoneDescription(loc)}
+
+你缺少：${lack}。这里很可能有好东西，但“看不见”本身就是危险。`,[
+      {text:'不摸黑，继续搜外面',desc:'安全一些。稀有资源留在里面。',fn:()=>{hideModal();continuation();}},
+      {text:'摸黑进去',desc:'极高风险。你完全看不见地面和退路。',fn:()=>{hideModal();if(chance(.18)){game.hp-=28;game.injury=Math.max(game.injury,1);resolveDarkZoneLoot(loc,0,'你几乎是爬着进去又爬着出来，居然真摸到了一件稀有资源。');}else{fatalExploration('摸黑不是探索方式','你在完全没有照明的情况下进入深层区域。真正出事时，你甚至没看清发生了什么。','无光区域致命事故',{trauma:true,missing:['手电筒 + 电池'],couldHaveSaved:'携带手电筒和电池，至少能先看见危险和退路。',context:'你选择在完全无照明的深层区域继续探索。'});}}}
+    ]);
+  }
+  return true;
+}
 function beginSearchApproach(mode){
   const ps=pendingSearch;if(!ps)return;
-  const cfg={quick:{risk:-.07,rolls:1,rare:0,name:'快速搜索'},careful:{risk:.04,rolls:2,rare:.07,name:'仔细翻找'},deep:{risk:.16,rolls:3,rare:.12,name:'深入搜索'}}[mode];
+  const cfg={quick:{risk:-.07,rolls:1,rare:0,name:'快速搜索'},careful:{risk:.04,rolls:2,rare:.02,name:'仔细翻找'},deep:{risk:.16,rolls:3,rare:.05,name:'深入搜索'}}[mode];
   ps.risk=Math.max(.02,ps.risk+cfg.risk);ps.rolls+=cfg.rolls-1;ps.rarityBonus+=cfg.rare;ps.searchMode=cfg.name;
   hideModal();
   const dangerProb=Math.min(.88,ps.risk+(ps.depth-1)*.07);
   ps.currentDangerProb=dangerProb;game.dangerFaced++;
   if(!chance(1-dangerProb)){triggerSearchDanger(ps.loc);return;}
-  if(maybeTriggerChoiceHazard(ps.loc,()=>doLootRoll(false)))return;
-  doLootRoll(false);
+  const afterHazard=()=>{if(maybeOfferDarkZone(ps.loc,()=>doLootRoll(false)))return;doLootRoll(false);};
+  if(maybeTriggerChoiceHazard(ps.loc,afterHazard))return;
+  afterHazard();
 }
 function rollLootTier(loc){
   const ps=pendingSearch||{rarityBonus:0,depth:1}; const st=getLocationState(loc);
-  let rare=.025+(st.rare||0)+(ps.rarityBonus||0)+(game.trait==='curious'?.05:0)+(game.trait==='scavenger'?.07:0)+(game.trait==='lucky'?.02:0)+(game.identity==='crow'?.03:0);
-  rare=Math.max(.02,Math.min(.38,rare));
-  let uncommon=.25+(st.tier==='orange'?.05:st.tier==='red'?.09:0)+(game.trait==='scavenger'?.04:0);
-  uncommon=Math.max(.18,Math.min(.68-rare,uncommon));
+  const deepEnough=ps.searchMode==='深入搜索'||(ps.depth||1)>=2;
+  const rareAllowed=(st.tier==='red'&&deepEnough)||(st.tier==='orange'&&deepEnough&&(ps.depth||1)>=2);
+  let rare=rareAllowed?(.015+(st.rare||0)*.28+(ps.rarityBonus||0)*.35+(game.trait==='curious'?.025:0)+(game.trait==='scavenger'?.035:0)+(game.trait==='lucky'?.015:0)+(game.identity==='crow'?.015:0)):0;
+  rare=Math.max(0,Math.min(.14,rare));
+  let uncommon=.25+(st.tier==='orange'?.07:st.tier==='red'?.12:0)+(deepEnough?.08:0)+(game.trait==='scavenger'?.04:0);
+  uncommon=Math.max(.18,Math.min(.74-rare,uncommon));
   const r=rand(); return r<rare?'rare':r<rare+uncommon?'uncommon':'common';
 }
 function lootBatch(loc,rolls){
@@ -1052,7 +1145,7 @@ function renderLootChoice(){
   const hasRare=entries.some(([id])=>rarityMeta(id).key==='rare');
   const lootRows=entries.length ? entries.map(([id,q])=>{
     const it=items[id],rare=rarityMeta(id);
-    const useBtn=it.usable?`<button type="button" class="mini lootUseBtn" data-item="${id}">现场使用</button>`:'';
+    const useBtn=(it.usable&&id!=='radio')?`<button type="button" class="mini lootUseBtn" data-item="${id}">现场使用</button>`:'';
     return `<div class="item ${rare.key==='rare'?'rareFlash':''}"><span class="itemName">${it.icon} ${it.name} ×${q}${rarityTag(id)}${it.note?`<small class="itemEffect">${it.note}</small>`:''}</span><span class="itemBtns"><button type="button" class="mini lootTakeBtn" data-item="${id}">带走 1 个</button>${useBtn}</span></div>`;
   }).join('') : '<div class="muted">这轮找到的东西已经处理完了。</div>';
   const modal=document.getElementById('modalCard');
@@ -1137,18 +1230,16 @@ function confirmSwapLoot(newId){
 
 function useLootOnSite(id){
   if(!pendingSearch?.currentLoot?.[id])return;
-  const it=items[id]; if(!it?.usable)return;
-  const before=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
+  const it=items[id]; if(!it?.usable||id==='radio')return;
+  const blocked=itemUseBlocked(id);if(blocked){log(blocked);toast(blocked);renderGame();renderLootChoice();return;}
+  const before=JSON.stringify({hp:game.hp,food:game.food,water:game.water,morale:game.morale,injury:game.injury});
   const msg=it.use(game);
-  const after=JSON.stringify({hp:game.hp,food:game.food,water:game.water});
-  // 对于打不开的罐头、鸡无法处理的罐头等，不消耗现场物资。
-  if(before===after){
-    log(msg); toast('没用上。'); renderGame(); renderLootChoice(); return;
-  }
+  const after=JSON.stringify({hp:game.hp,food:game.food,water:game.water,morale:game.morale,injury:game.injury});
+  if(before===after){log(msg);toast(msg||'现在用不上。');renderGame();renderLootChoice();return;}
   decrementCurrentLoot(id);
   log(`现场使用：${msg}`);
-  toast(`现场用了：${it.name}`);
-  renderGame(); renderLootChoice(); checkEnding();
+  toast(msg);
+  renderGame(); renderLootChoice(); checkEnding();save();
 }
 
 function greedySearch(){
@@ -1157,8 +1248,9 @@ function greedySearch(){
   const dangerProb=Math.min(.94,ps.risk+(ps.depth-1)*.08);ps.currentDangerProb=dangerProb;game.dangerFaced++;
   if(!chance(1-dangerProb)){triggerSearchDanger(ps.loc);return;}
   log(`你在${locationDefs[ps.loc].name}决定继续往里搜。危险更高了，好东西的概率也一样。`);
-  if(maybeTriggerChoiceHazard(ps.loc,()=>doLootRoll(true)))return;
-  doLootRoll(true);
+  const afterHazard=()=>{if(maybeOfferDarkZone(ps.loc,()=>doLootRoll(true)))return;doLootRoll(true);};
+  if(maybeTriggerChoiceHazard(ps.loc,afterHazard))return;
+  afterHazard();
 }
 
 function leaveSearch(){
@@ -1392,17 +1484,17 @@ function crisisHelpful(type){
     if(shelterScore()>=2)helped.push(`🏠 住所防护 ${shelterStars()}：减少烟从门窗缝隙压进来`);
     if(game.hp>=55&&game.injury<2)helped.push('❤️ 身体状态：还有体力撤离或封堵');
   }
-  if(hasPossession('radio'))helped.push('📻 收音机：让你比别人更早知道局势变化');
+  if(game.radioIntelType===type)helped.push('📻 收音机情报：你提前听到了这场灾难的异常信号');
   return helped.slice(0,5);
 }
 function crisisScore(type){
-  if(type==='water') return (game.water>=55?1:0)+(totalItemCount('water')>=2?1:0)+(hasPossession('purifier')?1:0)+(game.identity==='cockroach'||game.identity==='mouse'?1:0)+(hasPossession('radio')?.5:0);
-  if(type==='cold') return (hasPossession('blanket')?1:0)+(shelterScore()>=2?1:0)+(game.hp>=60&&game.injury<2?1:0)+(game.identity==='dog'?1:0)+(hasPossession('crowbar')?.5:0);
+  if(type==='water') return (game.water>=55?1:0)+(totalItemCount('water')>=2?1:0)+(hasPossession('purifier')?1:0)+(game.identity==='cockroach'||game.identity==='mouse'?1:0)+(game.radioIntelType==='water'?.75:0);
+  if(type==='cold') return (hasPossession('blanket')?1:0)+(shelterScore()>=2?1:0)+(game.hp>=60&&game.injury<2?1:0)+(game.identity==='dog'?1:0)+(hasPossession('crowbar')?.5:0)+(game.radioIntelType==='cold'?.75:0);
   if(type==='unrest'){
     let social=game.identity==='human'?(game.reputation>=10?1:0):game.identity==='chicken'?(game.chickenValue>=50?1:0):1;
-    return (game.morale>=55?1:0)+(game.hp>=55&&game.injury<2?1:0)+(foodStock()+totalItemCount('water')>=4?1:0)+social+(hasPossession('radio')?.5:0)+(hasPossession('routeMap')?.5:0)+(shelterScore()>=3 ? .5 : 0);
+    return (game.morale>=55?1:0)+(game.hp>=55&&game.injury<2?1:0)+(foodStock()+totalItemCount('water')>=4?1:0)+social+(game.radioIntelType==='unrest'?.75:0)+(hasPossession('routeMap')?.5:0)+(shelterScore()>=3 ? .5 : 0);
   }
-  return (totalItemCount('water')>=1?1:0)+((hasPossession('tape')||game.shelterSealed)?1:0)+(game.hp>=55&&game.injury<2?1:0)+(shelterScore()>=2?1:0)+(hasPossession('gasmask')?1:0);
+  return (totalItemCount('water')>=1?1:0)+((hasPossession('tape')||game.shelterSealed)?1:0)+(game.hp>=55&&game.injury<2?1:0)+(shelterScore()>=2?1:0)+(hasPossession('gasmask')?1:0)+(game.radioIntelType==='smoke'?.75:0);
 }
 function storiesForDeath(type){
   return {water:'供水彻底中断后，你手上的可用水和净水手段不足。',cold:'低温持续压下来时，保暖、住所或身体状态有明显缺口。',unrest:'街区失控后，你缺少足够的物资、状态或关系来撑过冲突。',smoke:'黑烟压进住处后，你缺少封缝、防烟或基础水源。'}[type]||'你没有准备好应对这次变化。';
@@ -1657,26 +1749,98 @@ function resolveChickenShelter(){
   finish('今晚加餐','你逃过了整个末日的一部分，没有逃过晚饭。','避难所食物短缺');
 }
 
+function finalRouteStatus(){
+  const escapeMissing=[];
+  let escapeReady=false,escapeLabel='沿撤离路线离开';
+  if(game.identity==='human'){
+    if(!hasPossession('routeMap'))escapeMissing.push('撤离路线图');
+    if(!hasPossession('carKey'))escapeMissing.push('车钥匙');
+    escapeReady=!escapeMissing.length;
+  }else if(game.identity==='cockroach'){
+    if(!hasPossession('routeMap'))escapeMissing.push('撤离路线图');
+    if(!hasPossession('carKey'))escapeMissing.push('车钥匙');
+    escapeReady=!escapeMissing.length;escapeLabel='开车离开（？）';
+  }else if(game.identity==='crow'){
+    if(!hasPossession('routeMap'))escapeMissing.push('撤离路线图');
+    escapeReady=!escapeMissing.length;escapeLabel='沿路线飞离城区';
+  }else{
+    escapeMissing.push('你这个身份无法直接使用车辆撤离路线');
+  }
+  const holdMissing=[];
+  if(shelterScore()<3)holdMissing.push('★★★ 加固住所');
+  if(foodStock()<3)holdMissing.push('至少 3 份食物储备');
+  if(totalItemCount('water')<2)holdMissing.push('至少 2 份饮用水');
+  if(game.hp<45||game.injury>=2)holdMissing.push('能继续撑下去的身体状态');
+  const holdReady=!holdMissing.length;
+  const campMissing=[];
+  const socialReady=!!game.flags.shelterClue||game.trait==='social'||(game.identity==='human'&&game.reputation>=12)||(game.identity==='chicken'&&game.chickenValue>=50)||game.identity==='dog';
+  if(!socialReady)campMissing.push('避难所线索或足够的关系');
+  if(game.morale<40)campMissing.push('足够的士气去接触陌生幸存者');
+  const campReady=!campMissing.length;
+  return {escapeReady,escapeMissing,escapeLabel,holdReady,holdMissing,campReady,campMissing};
+}
+function endingPassStatus(cause){
+  const c=String(cause||'');
+  if(c.includes('正式通关')||c.includes('稳定生存'))return '✅ 正式通关';
+  if(c.includes('未找到出路'))return '⚪ 存活，但未通关';
+  return '☠️ 本局失败';
+}
+function resolveFinalEscape(){
+  const r=finalRouteStatus();if(!r.escapeReady){toast(`还缺：${r.escapeMissing.join('、')}`);return;}
+  hideModal();game.finalRoute='escape';
+  if(game.identity==='cockroach'){
+    addAch('roachdriver','《生命会自己找到出路》 蟑螂真的把车开走了。');
+    finish('生命会自己找到出路','路线图摊在方向盘旁边。没人解释一只蟑螂为什么会开车，但城市已经没有精力管这件事。','正式通关 · 驾车撤离');return;
+  }
+  if(game.identity==='crow'){
+    finish('城市在脚下缩小','你沿着路线图标出的空旷走廊飞出城区。别人需要出口，你需要的是方向。','正式通关 · 离开城区');return;
+  }
+  finish('最后一条路','路线图和车钥匙终于在最后一天对上了。你没有等城市彻底封死出口。','正式通关 · 驾车撤离');
+}
+function resolveFinalHold(){
+  const r=finalRouteStatus();if(!r.holdReady){toast(`还缺：${r.holdMissing.join('、')}`);return;}
+  hideModal();game.finalRoute='hold';
+  const title={chicken:'这次真的是鸡窝',cockroach:'墙缝根据地',dog:'守住这个家',cat:'这里正式归你了',crow:'高处据点',mouse:'洞里有粮'}[game.identity]||'把门封上';
+  const quote={chicken:'你没有去找人类文明。你有加固住所、有粮、有水，而且暂时没人想炖你。非常合理。',cockroach:'住所对人类来说叫废墟，对你来说已经升级成永久地产。',dog:'门挡得住风，食物和水也够。至少接下来一段时间，这里可以叫“家”。',cat:'你把安全睡觉点、食物和水全部纳入了自己的领地管理。产权问题以后再说。',crow:'你选了一个足够高、足够稳的位置，把最后的物资都搬了上去。',mouse:'地面上的城市继续坏下去，而你的洞里已经有了完整库存。'}[game.identity]||'你把最后几处缝隙封好，把水和食物重新数了一遍。你不是在等救援，而是在把这里变成据点。';
+  finish(title,quote,'正式通关 · 固守据点');
+}
+function resolveFinalCamp(){
+  const r=finalRouteStatus();if(!r.campReady){toast(`还缺：${r.campMissing.join('、')}`);return;}
+  hideModal();game.finalRoute='camp';
+  if(game.identity==='chicken'){
+    const score=game.chickenValue+(game.trait==='social'?15:0)+(game.eggsLaid*4);
+    if(score>=65){finish('避难所吉祥物','这次你不是“移动蛋白质”。有人认识你、有人给你留水，甚至有人认真给你搭了鸡窝。','正式通关 · 加入幸存者据点');return;}
+    addAch('dinner','《今晚加餐》 你成功抵达了人类避难所。');
+    finish('今晚加餐','你找到了幸存者据点，也找到了食物链的终点。','避难所食物短缺',makeDeathInfo('被当作食物',['更高的活鸡价值'],'在去人类据点之前，让更多人把你当“认识的鸡”而不是“食材”。','你进入了食物紧张的人类据点。'));return;
+  }
+  if(game.identity==='dog'){finish('有人给你留了位置','营地门口的人先看了你的伤，再看了你的尾巴。最后有人往旁边挪了挪，给你留出一块地方。','正式通关 · 加入幸存者据点');return;}
+  if(game.identity==='cat'){finish('营地编外成员','没有人正式邀请你，但第二天大家发现你还在，而且已经选好了固定睡觉的位置。','正式通关 · 加入幸存者据点');return;}
+  if(game.identity==='crow'){finish('屋顶观察哨','你没有住进人类的房间，只占了他们最高的屋顶。作为交换，你总比他们先看见远处的动静。','正式通关 · 加入幸存者据点');return;}
+  if(game.identity==='mouse'){finish('粮仓新住户','人类在地面上建立据点，你在他们没注意到的墙后建立了自己的。双方都认为自己赢了。','正式通关 · 加入幸存者据点');return;}
+  if(game.identity==='cockroach'){finish('据点常驻居民','幸存者们终于有了稳定据点。你也终于有了稳定厨房。没有任何一方征求过另一方意见。','正式通关 · 加入幸存者据点');return;}
+  finish('临时社区','你没有一个人撑到最后。有人守门、有人分水、有人记住哪些街口已经不能走。这里还不是文明，但已经是一条活路。','正式通关 · 加入幸存者据点');
+}
+function triggerFinalOpportunity(){
+  if(game.ending)return;
+  game.finalTriggered=true;save();
+  const r=finalRouteStatus();
+  const lock=(ready,missing)=>ready?'条件已经准备好':`还缺：${missing.join('、')}`;
+  openEvent('🚪','最后的机会真的来了',`第十天到了。城市没有恢复，广播也没有宣布“游戏结束”。\n\n活到今天只代表你获得了做最后决定的资格。现在，你得选一条真正能继续活下去的路。`,[
+    {text:`🚗 ${r.escapeLabel}${r.escapeReady?'':'（条件不足）'}`,desc:lock(r.escapeReady,r.escapeMissing),fn:resolveFinalEscape},
+    {text:`🏠 固守现在的住所${r.holdReady?'':'（条件不足）'}`,desc:lock(r.holdReady,r.holdMissing),fn:resolveFinalHold},
+    {text:`👥 前往幸存者据点${r.campReady?'':'（条件不足）'}`,desc:lock(r.campReady,r.campMissing),fn:resolveFinalCamp},
+    {text:'就这样继续活着',desc:'不押任何路线。你活过了十天，但没有建立稳定出路——这是存活结局，不算正式通关。',fn:()=>{hideModal();game.finalRoute='none';finish('还活着','你撑过了十天。城市没有恢复，你也没有找到稳定出口。好消息是你还活着；坏消息是，这只是下一天的开头。','十日存活 · 未找到出路');}}
+  ]);
+}
 function checkEnding(){
   if(game.ending)return true;
   if(game.hp<=0){const info=game.lastDamage||makeDeathInfo(game.water<=0?'严重脱水':(game.food<=0?'饥饿与体力衰竭':'伤势恶化'),game.water<=0?['饮用水']:(game.food<=0?['可立即食用的食物']:['及时治疗伤势']),game.water<=0?'找到并保留饮用水会直接改变这个结果。':(game.food<=0?'保留能立即吃掉的食物，会比多囤工具更重要。':'急救包或高级急救包可能让你多撑一段。'),'生命值被持续消耗到无法继续行动。');finish('到此为止',info.context||'你已经没有力气继续了。末日没有给你第二条命，但按钮会。',info.direct||'生命归零',info);return true;}
-  if(game.day>=10){
-    if(hasPossession('routeMap')&&hasPossession('carKey')&&game.identity!=='chicken'&&game.identity!=='cockroach'&&game.identity!=='crow'&&game.identity!=='mouse'){finish('最后一条路','那张一直占着半格背包的路线图，终于和那串莫名其妙的车钥匙对上了。你没有等城市彻底合上出口。','十日终局 · 找到撤离路线');}
-    else if(game.identity==='human' && game.reputation>=20){finish('临时社区','第十天，你终于和几名幸存者把门堵好、把水分开，也把彼此的名字记住了。这里称不上文明，但已经不只是逃命。','十日终局 · 建立临时社区');}
-    else if(game.identity==='chicken' && game.chickenValue>=65){finish('鸡生赢家','你撑过了最混乱的十天，还找到了一个暂时没人想把你端上桌的地方。作为一只鸡，这已经是史诗级履历。','十日终局 · 稳定活鸡');}
-    else if(game.identity==='cockroach'){finish('世界毁灭与你关系不大','第十天，人类还在讨论秩序什么时候恢复。你已经换了三个墙缝，并且觉得这里发展前景不错。','十日终局 · 蟑螂仍然健在');}
-    else if(game.identity==='dog'){finish('有人叫了你一声','第十天，你在一个临时营地外停下。有人蹲下来拍了拍身边的位置。你闻了闻，决定这次可以相信。','十日终局 · 找到新的落脚点');}
-    else if(game.identity==='cat'){finish('这里归你了','第十天，你已经找到固定的水、两个安全睡觉点和三条逃跑路线。人类是否恢复秩序，对你的产权没有影响。','十日终局 · 猫仍然自由');}
-    else if(game.identity==='crow'){finish('城市观察员','第十天，你还在高处。下面的路少了很多，但你总能先看见下一条。','十日终局 · 乌鸦继续迁移');}
-    else if(game.identity==='mouse'){finish('墙里还有路','第十天，地面上的世界越来越难走。幸好你从来没有只把地面当地图。','十日终局 · 老鼠继续扩张');}
-    else finish('十日幸存者','你撑过了最危险的十天。没人知道后面会不会更好，但这一局，命运暂时没能把你收走。','十日终局');
-    return true;
-  }
+  if(game.day>=10){triggerFinalOpportunity();return true;}
   return false;
 }
 
 function isSurvivalCause(cause){
-  return /十日终局|稳定生存|找到撤离路线|建立临时社区|稳定活鸡|仍然健在|找到新的落脚点|猫仍然自由|继续迁移|继续扩张/.test(String(cause||''));
+  return /正式通关|十日存活|稳定生存|找到撤离路线|建立临时社区|稳定活鸡|仍然健在|找到新的落脚点|猫仍然自由|继续迁移|继续扩张/.test(String(cause||''));
 }
 function inferDeathInfo(cause,quote){
   if(isSurvivalCause(cause))return null;
@@ -1703,7 +1867,7 @@ function finish(title,quote,cause,deathInfo=null){
   game.deathInfo=info;
   game.ending={title,quote:finalQuote,cause,day:game.day}; clearSave();
   document.getElementById('endingTitle').textContent=title;
-  const report=[['身份',idData().label],['身份档案',game.identityCard?.title||'未命名'],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['搜索次数',game.searches],['致命判断事件',game.dangerChoices||0],['贪心次数',game.greedySearches],['高级急救包救命',`${game.rescues||0} 次`],['最值钱的发现',game.bestLoot],['最终原因',cause]];
+  const report=[['身份',idData().label],['身份档案',game.identityCard?.title||'未命名'],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['通关状态',endingPassStatus(cause)],['最终路线',game.finalRoute==='escape'?'撤离城市':game.finalRoute==='hold'?'固守据点':game.finalRoute==='camp'?'幸存者据点':game.finalRoute==='none'?'未找到稳定出路':'非终局死亡'],['搜索次数',game.searches],['致命判断事件',game.dangerChoices||0],['贪心次数',game.greedySearches],['高级急救包救命',`${game.rescues||0} 次`],['最值钱的发现',game.bestLoot],['最终原因',cause]];
   document.getElementById('report').innerHTML=report.map(r=>`<div><span style="color:#776e5d">${r[0]}</span><br><strong>${r[1]}</strong></div>`).join('');
   renderDeathBreakdown(info);
   document.getElementById('endingQuote').textContent='“'+finalQuote+'”';
@@ -1713,7 +1877,8 @@ function finish(title,quote,cause,deathInfo=null){
 
 function copyReport(){
   const why=game.deathInfo?.isDeath?`\n死因：${game.deathInfo.direct}\n关键缺口：${(game.deathInfo.missing||[]).join('、')||'无单一缺口'}`:'';
-  const text=`《末日转盘 V0.2.1》\n身份：${idData().short}\n身份档案：${(game.identityCard||makeIdentityCard())?.title||'未命名'}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}${why}\n${game.ending.quote}`;
+  const text=`《末日转盘 V0.2.3》\n身份：${idData().short}\n身份档案：${(game.identityCard||makeIdentityCard())?.title||'未命名'}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}
+通关状态：${endingPassStatus(game.ending.cause)}${why}\n${game.ending.quote}`;
   copyText(text);
 }
 function copyText(t){ if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast();}).catch(function(){fallbackCopy(t);});} else fallbackCopy(t); }
