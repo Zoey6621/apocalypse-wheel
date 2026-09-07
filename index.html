@@ -185,7 +185,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.2.4.4：生存判定统一修复版。危机与夜间会先检查可用物资；真正消耗或救命时会明确告诉你。随机仍然负责制造麻烦，不再负责假装没看见你的背包。</div>
+      <div class="tinyNote">V0.2.4.4：危机会检查背包与储藏，实际消耗会写清楚。剩下的，交给运气。</div>
     </div>
   </section>
 
@@ -242,7 +242,7 @@
           <div class="tutorialStep"><strong>① 顶部先看状态</strong><br/>状态只显示“良好 / 偏低 / 危险”。想管物资，点一直可见的 🎒 背包。</div>
           <div class="tutorialStep"><strong>② 白天出去搜</strong><br/>行动力有限；越深入，越容易摸到稀有资源，也越容易出事。</div>
           <div class="tutorialStep"><strong>③ 留意「活下去的路」</strong><br/>撤离、固守、据点都会显示进度。隐藏地点需要线索才能真的出现在地图里。</div>
-          <div class="tutorialStep"><strong>④ 每晚都会判定</strong><br/>结束今天后会检查住所、身体、物资和天赋。系统会提前告诉你今晚到底稳不稳。</div>
+          <div class="tutorialStep"><strong>④ 每晚都会结算</strong><br/>结束今天后会检查住所、身体、物资和天赋，并告诉你今晚稳不稳。</div>
         </div>
         <button type="button" id="tutorialDismissBtn" class="tutorialDismiss">知道了，不要再教我 →</button>
       </div>
@@ -373,7 +373,7 @@ const traits = [
   {id:'lucky', label:'🍀 幸运儿', short:'幸运儿', desc:'危险里更容易全身而退，也更容易碰见好东西。'},
   {id:'social', label:'🤝 社交达人', short:'社交达人', desc:'涉及其他生物时，更容易获得善意结果。'},
   {id:'smallappetite', label:'🥣 胃口小', short:'胃口小', desc:'每日饱食消耗减少 25%。'},
-  {id:'runner', label:'💨 飞毛腿', short:'飞毛腿', desc:'逃跑、撤退类判定更有优势。'},
+  {id:'runner', label:'💨 飞毛腿', short:'飞毛腿', desc:'逃跑和撤退时更容易成功。'},
   {id:'curious', label:'👁️ 好奇心', short:'好奇心', desc:'更容易摸到稀有物资，但“再看看”也更危险。'},
   {id:'unlucky', label:'☁️ 倒霉蛋', short:'倒霉蛋', desc:'危险事件更容易找上门。'},
   {id:'hoarder', label:'🎒 囤货狂', short:'囤货狂', desc:'随身空间 +2，藏物空间 +3。末日终于给了你囤东西的正当理由。'},
@@ -406,14 +406,14 @@ const items = {
   soap:{name:'洗洁精', icon:'🧴', size:1, rarity:'common', usable:false},
   medkit:{name:'急救包', icon:'🩹', size:1, rarity:'uncommon', usable:true, use:(s)=>{if(s.identity==='cockroach') return '你围着急救包转了一圈。它没有蟑螂尺寸的说明书。';s.hp=Math.min(100,s.hp+35);if(s.injury>0){s.injury--;return '处理了伤口，生命 +35，伤势减轻。';}return '处理了一下伤口，生命 +35。';}},
   blanket:{name:'保暖毯', icon:'🧣', size:2, rarity:'uncommon', usable:false, note:'无需手动使用；遇到极寒时会自动提供基础保温。但如果住所太差，一条毯子不一定够。'},
-  purifier:{name:'净水工具', icon:'🚰', size:1, rarity:'uncommon', usable:false, note:'断水时会从背包或住所储藏中自动调用；工具不消耗，并会明确显示处理结果。'},
+  purifier:{name:'净水工具', icon:'🚰', size:1, rarity:'uncommon', usable:false, note:'断水时自动使用，不会消耗。'},
   flashlight:{name:'手电筒', icon:'🔦', size:1, rarity:'uncommon', usable:false, note:'与随身电池组合后，可进入部分完全无光的高危深层区域。'},
   battery:{name:'电池', icon:'🔋', size:.5, rarity:'uncommon', usable:false, note:'为手电筒或收音机供电。进入黑暗深层区域通常会消耗 1 节。'},
   crowbar:{name:'撬棍', icon:'🛠️', size:1.5, rarity:'uncommon', usable:false},
   egg:{name:'鸡蛋', icon:'🥚', size:1, rarity:'common', usable:true, use:(s)=>{const gain=(s.identity==='cockroach'||s.identity==='mouse')?34:22;s.food=Math.min(100,s.food+gain);return s.identity==='chicken'?'……你选择吃掉了自己的蛋。末日没有伦理课。饱食 +22。':((s.identity==='cockroach'||s.identity==='mouse')?'你找到了蛋壳裂缝。豪华自助餐，饱食 +34。':'吃掉鸡蛋，饱食 +22。');}},
   medicalcase:{name:'高级急救包', icon:'🧰', size:2, rarity:'rare', usable:true, note:'随身携带时，可在部分致命外伤事件中自动救你一次。', use:(s)=>{s.hp=Math.min(100,s.hp+60);s.injury=0;return '你用掉了高级急救包。生命 +60，伤势清除。它如果留在背包里，本来也能在部分致命外伤里自动救你一次。';}},
   radio:{name:'便携收音机', icon:'📻', size:1, rarity:'rare', usable:true, note:'消耗 1 节随身电池，可提前听到下一场大型灾难的模糊情报。'},
-  gasmask:{name:'防烟面罩', icon:'😷', size:1, rarity:'rare', usable:false, note:'浓烟危机发生在住所时会自动调用；外出时仍需随身携带。'},
+  gasmask:{name:'防烟面罩', icon:'😷', size:1, rarity:'rare', usable:false, note:'浓烟袭来时自动使用；外出时需要随身携带。'},
   routeMap:{name:'撤离路线图', icon:'🗺️', size:.5, rarity:'rare', usable:false, note:'终局关键资源。拿到后会直接推进「撤离城市」路线，并显示还缺什么。'},
   carKey:{name:'陌生车钥匙', icon:'🔑', size:.5, rarity:'rare', usable:false, note:'终局关键资源。对人类和蟑螂来说，与撤离路线图组合后可准备驾车撤离。'}
 };
@@ -893,7 +893,7 @@ function itemPurpose(id){
   if(id==='flashlight')return hasItem('battery')?'探索工具 · 可进入黑暗深层区':'探索工具 · 还缺随身电池';
   if(id==='battery')return hasItem('flashlight')&&hasItem('battery')?'能源 · 随身照明组合已就绪':hasPossession('radio')?'能源 · 可在住所为收音机供电':'能源 · 可驱动收音机 / 手电';
   if(id==='blanket')return '防灾资源 · 极寒时自动生效';
-  if(id==='purifier')return '防灾资源 · 断水判定 / 水源事件';
+  if(id==='purifier')return '防灾资源 · 断水 / 水源事件';
   if(id==='gasmask')return '防灾资源 · 浓烟时自动生效';
   if(id==='medicalcase')return '保命资源 · 部分致命外伤自动救援';
   if(id==='crowbar')return '工具 · 加固住所 / 深层探索 / 硬开罐头';
@@ -1049,8 +1049,9 @@ function renderSecretLocations(){
 function campRelationLabel(v){return v>=2?'接纳':v===1?'认识':'陌生'}
 function showCampOutcome(title,beforeTrust,extra=''){
   const after=game.campTrust||0,delta=after-beforeTrust;
-  const route=after>=2?'✅ 据点路线：已达到「接纳」门槛':after===1?'🧭 据点路线：关系已建立，还需要继续接触':'🧭 据点路线：暂未推进';
-  openEvent('👥',title,`据点关系：${campRelationLabel(beforeTrust)} → ${campRelationLabel(after)}${delta>0?`（+${delta}）`:''}\n${route}${extra?`\n\n${extra}`:''}`,[
+  const dialogue=after>=2?'守门人看了你一会儿，把门推开一点：“进来吧。今晚给你留位置。”':after===1?'守门人终于认出了你：“我记得你。下次来，带点消息。”':'守门人没有放下手里的东西：“先到这里。我们还不熟。”';
+  const route=after>=2?'他们愿意接纳你了。':after===1?'他们已经记住你；再取得一次信任，门就可能真正打开。':'这次没有推进关系。';
+  openEvent('👥',title,`${dialogue}\n\n据点关系：${campRelationLabel(beforeTrust)} → ${campRelationLabel(after)}${delta>0?`（+${delta}）`:''}\n${route}${extra?`\n\n${extra}`:''}`,[
     {text:'知道了',desc:'返回地图。',fn:()=>{hideModal();renderGame();save();}}
   ],'据点结算');
 }
@@ -1060,7 +1061,7 @@ function visitCamp(){
   if(game.day>1&&!game.morningDone){toast('🌅 先处理今天早上的事件');return;}
   game.actions--;
   const social=game.trait==='social';
-  openEvent('👥','幸存者据点',`你终于能把传闻和地图上的位置对应起来。入口有人守着，里面有灯，也有人在交换物资。\n\n当前关系：${campRelationLabel(game.campTrust||0)}。\n每次有效互动都会明确告诉你有没有推进「据点路线」。`,[
+  openEvent('👥','幸存者据点',`你终于把传闻和地图上的位置对上了。入口有人守着，铁门后亮着几盏不太稳定的灯。\n\n“先别靠太近。”守门人抬起手，“你带来的是消息，还是麻烦？”\n里面有人低声说：“让对方先讲。”\n\n当前关系：${campRelationLabel(game.campTrust||0)}。`,[
     {text:social?'🤝【社交达人】主动跟守门人聊':'先跟守门人聊聊',desc:social?'你的天赋会让这次互动更稳定。':'建立关系，为终局据点路线做准备。',fn:()=>{const before=game.campTrust||0;if(social||chance(.62)){game.campTrust=Math.min(3,before+1);if(social)traitTrigger('你明显更容易让据点的人记住并信任你。');else log('你和据点的人建立了一点联系。');game.morale=Math.min(100,game.morale+5);showCampOutcome('这次交流有进展',before,'🙂 士气 +5');}else{game.morale=Math.max(0,game.morale-4);log('这次交流有点僵。至少没人赶你走。');showCampOutcome('这次没聊进去',before,'🙂 士气 -4，但据点仍然保留在地图上。');}}},
     {text:'用一份食物换消息',desc:'消耗一份随身食物，提高据点关系。',fn:()=>{const before=game.campTrust||0;const f=['crackers','grain','canned','egg'].find(hasItem);if(f){removeItem(f,1);game.campTrust=Math.min(3,before+1);log(`你用${items[f].name}换了据点的信任和一些消息。`);showCampOutcome('交换成功',before,`🎒 ${items[f].name} -1`);}else{showCampOutcome('你翻了半天背包',before,'没有可交换的随身食物，所以关系没有变化。');}}},
     {text:'今天只看看',fn:()=>{const before=game.campTrust||0;log('你记住了据点的入口，没有急着把自己交给陌生人。');showCampOutcome('你先观察了一圈',before,'没有增益，也没有损失。你至少知道下次还能回来。');}}
@@ -1298,7 +1299,7 @@ function enterDarkZone(loc){
     {text:'贴着墙慢慢搜',desc:'保守进入。保证找到 1 件稀有资源，但不继续赌最深处。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,0,'你用手电确认了地面和退路，贴着墙慢慢往里搜。');}},
     {text:'直接冲最里面的封闭柜',desc:'可能多拿 1 件稀有资源；也可能把“深处”变成你的永久住址。',fn:()=>{hideModal();if(chance(.46)){game.hp-=18;game.injury=Math.max(game.injury,1);resolveDarkZoneLoot(loc,1,'你硬闯到最里面，带着伤把封闭柜里的东西拖了出来。');}else{fatalExploration('黑暗深处没有第二次机会','手电照见了危险，你还是选择直接冲向最里面的柜子。退路在混乱里被切断。','深层探索事故',{trauma:true,missing:['更谨慎的深层探索判断'],couldHaveSaved:'手电已经帮你看见了风险。真正缺的是见好就收。',context:'无光深层区域里存在明显障碍和不稳定结构，你仍选择直接冲最深处。'});}}}
   ];
-  if(hasItem('crowbar'))choices.splice(1,0,{text:'用撬棍慢慢开最里面的柜子',desc:'工具路线：风险低很多，并额外获得 1 次稀有资源判定。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,1,'你用撬棍一点点打开封闭柜，没有把整片结构一起撬下来。');}});
+  if(hasItem('crowbar'))choices.splice(1,0,{text:'用撬棍慢慢开最里面的柜子',desc:'风险低很多，也更容易多找到一件稀有物资。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,1,'你用撬棍一点点打开封闭柜，没有把整片结构一起撬下来。');}});
   openEvent('🔦','光照到了一些不该摸黑碰的东西',`${darkZoneDescription(loc)}
 
 ${warning}`,choices);
@@ -1522,7 +1523,7 @@ function triggerSearchDanger(loc){
   }
   if(loc==='supermarket' && game.identity==='chicken'){
     openEvent('👁️🍗','有人看见了你',`你正准备从货架旁撤退，一个饿得眼睛发直的幸存者也看见了你。\n\n你突然意识到：在他的物资分类里，你可能不属于“玩家”。`,[
-      {text:'扑腾着跑！',desc:'进行逃跑判定。',fn:()=>{let p=.48+(game.trait==='runner'?.18:0)+(game.trait==='lucky'?.12:0); if(rand()<p){game.morale-=8;log('你扑腾出一条鸡生通道，成功逃走。');hideModal();renderGame();}else{finish('今晚加餐','你逃过了货架、抢购和末日，没有逃过别人的晚饭。','被幸存者抓住',makeDeathInfo('被饥饿幸存者抓住',['更安全的撤离路线'],'飞毛腿、幸运或更早撤离都可能改变这次结果。','你在混乱超市里被饥饿的幸存者盯上，逃跑失败。'));}}}
+      {text:'扑腾着跑！',desc:'赌自己能不能甩掉他们。',fn:()=>{let p=.48+(game.trait==='runner'?.18:0)+(game.trait==='lucky'?.12:0); if(rand()<p){game.morale-=8;log('你扑腾出一条鸡生通道，成功逃走。');hideModal();renderGame();}else{finish('今晚加餐','你逃过了货架、抢购和末日，没有逃过别人的晚饭。','被幸存者抓住',makeDeathInfo('被饥饿幸存者抓住',['更安全的撤离路线'],'飞毛腿、幸运或更早撤离都可能改变这次结果。','你在混乱超市里被饥饿的幸存者盯上，逃跑失败。'));}}}
     ]); return;
   }
   if(loc==='supermarket' && game.identity==='human'){
@@ -1733,7 +1734,7 @@ function crisisLastChanceAdvice(c){
 function triggerLastChance(c){
   const info=crisisInfo(c.type),advice=crisisLastChanceAdvice(c);
   const omen={water:'昨晚水管断断续续地响了几声，今早只剩一股很细的水。',cold:'昨晚窗缝里的风已经像刀子，玻璃边缘结了一层薄霜。',unrest:'昨晚街口一直有人跑动，卷帘门被砸的声音持续到后半夜。',smoke:'昨晚风里一直带着焦味，远处的黑烟比昨天更低。'}[c.type];
-  const verdict=advice.ready?`你已经握住一条明确生路：${advice.need}。今天别把关键准备弄丢；多补一点，能少付些代价。`:`当前最要命的缺口：${advice.need}。今天结束时如果还没有补上，明早的${advice.label}就可能直接进入死亡判定。`;
+  const verdict=advice.ready?`你已经准备好了${advice.need}。今天别弄丢；多补一点，能少付些代价。`:`当前最要命的缺口：${advice.need}。今天结束时如果还没有补上，明早的${advice.label}可能会要你的命。`;
   openEvent(info.icon,`${advice.label}来临前，只剩今天`,`${omen}\n\n${verdict}\n\n去哪里找：${advice.where}。`,[
     {text:'记住缺口，开始最后准备',desc:'今天仍有完整行动力；提示只给方向，不保证一定搜到。',fn:()=>finishMorning(`最后准备：${advice.label}`,`明天将触发${advice.label}。${advice.ready?'已有保命方案，别弄丢。':`最关键：${advice.need}。`}`,`⚠️ 明天将触发${advice.label}。${verdict}`)}
   ],'生存预警');
@@ -1841,10 +1842,10 @@ function triggerCrisis(c){
     unrest:`天还没完全亮，楼下就传来玻璃碎裂的声音。\n\n有人在跑，有人在喊，还有人开始挨家挨户敲门。`,
     smoke:`你醒来时先闻到了焦味。\n\n窗外已经看不清远处，黑烟正顺着风往这一片压。`
   };
-  openEvent(info.icon,info.title,stories[c.type],[{text:'先活过今天',desc:'系统会先检查背包、住所储藏和已经完成的准备，再结算结果。',fn:()=>resolveCrisis(c)}],'危机事件');
+  openEvent(info.icon,info.title,stories[c.type],[{text:'先活过今天',desc:'背包、储藏和住所里能用的东西都会派上用场。',fn:()=>resolveCrisis(c)}],'危机事件');
 }
 function showCrisisResult(icon,title,intro,feedback,consequence){
-  const uses=feedback.length?`<div class="crisisResult">${feedback.map(x=>`<div>✓ ${x}</div>`).join('')}</div>`:'<div class="crisisResult"><div>这次没有消耗道具；是状态、身份或住所把你托住了。</div></div>';
+  const uses=feedback.length?`<div class="crisisResult">${feedback.map(x=>`<div>✓ ${x}</div>`).join('')}</div>`:'<div class="crisisResult"><div>这次没有消耗道具。</div></div>';
   openEvent(icon,title,`<p>${intro}</p>${uses}<div class="survivalUse"><strong>${consequence}</strong><small>所有实际消耗都已列在上面，没有后台偷偷吞东西。</small></div>`,[
     {text:'知道了，继续今天',fn:()=>{hideModal();renderGame();save();}}
   ],'危机结算');
@@ -1858,19 +1859,19 @@ function resolveCrisis(c){
   const info=crisisInfo(c.type);
   if(score>=need+1){
     game.morale+=3; game.dayEffect.name='熬过去了'; game.dayEffect.desc='你提前做的准备终于派上了用场。';
-    log(`真正的麻烦来了，但你手里刚好有能救命的东西。${feedback.length?'已调用：'+feedback.join('；'):'这次没有额外消耗道具。'}`);
-    showCrisisResult(info.icon,'准备真的派上了用场','系统先翻了背包，也翻了住所储藏。你没有被自己已经拥有的解法坑死。',feedback,'结果：安全撑过危机，士气 +3。');return;
+    log(`真正的麻烦来了，但你手里刚好有能救命的东西。${feedback.length?'用上了：'+feedback.join('；'):'这次没有额外消耗道具。'}`);
+    showCrisisResult(info.icon,'准备真的派上了用场','你把能用的东西全翻了出来，总算撑过这一轮。',feedback,'结果：安全撑过危机，士气 +3。');return;
   }
   if(score>=need){
     const crisisDamage=Math.min(25,Math.max(0,game.hp-1));game.hp-=crisisDamage; game.morale-=10; game.injury=Math.max(game.injury,c.type==='cold'?2:1);
     game.maxActions=currentMaxActions();game.actions=Math.min(game.actions,game.maxActions);
     game.dayEffect.name='勉强活下来'; game.dayEffect.desc='你过了这一关，但代价会跟着你进入下一天。';
-    log(`你调用了现有准备，勉强活了下来。生命 -${crisisDamage}，士气 -10，并留下伤势。${feedback.length?' 使用：'+feedback.join('；'):''}`);
-    showCrisisResult(info.icon,'差一点，但你还活着','有效资源先替你挡掉了必死结果；剩下的风险仍然留下代价。',feedback,`结果：生命 -${crisisDamage}，士气 -10，${c.type==='cold'?'留下重伤':'留下伤势'}。`);return;
+    log(`你靠现有准备勉强活了下来。生命 -${crisisDamage}，士气 -10，并留下伤势。${feedback.length?' 使用：'+feedback.join('；'):''}`);
+    showCrisisResult(info.icon,'差一点，但你还活着','命保住了，但没能全身而退。',feedback,`结果：生命 -${crisisDamage}，士气 -10，${c.type==='cold'?'留下重伤':'留下伤势'}。`);return;
   }
   const causes={water:'严重缺水',cold:'极端低温',unrest:'街区骚乱',smoke:'火灾与浓烟'};
   const quotes={water:'真正断水的时候，你才发现“等需要了再找”已经来不及。',cold:'气温不会因为你还没准备好就慢一点。',unrest:'世界乱起来以后，门外的人不一定只是来借东西。',smoke:'黑烟飘过来的时候，留给人的选择比想象中少。'};
-  finish('没能撑过这一夜',quotes[c.type],causes[c.type],makeDeathInfo(causes[c.type],missingAfter,`系统已经先调用了能用的资源；真正让你倒下的是：${missingAfter.join('、')||'剩余风险仍超过了现有准备'}。下一局看到前兆时，优先补这个缺口。`,storiesForDeath(c.type),helpful));
+  finish('没能撑过这一夜',quotes[c.type],causes[c.type],makeDeathInfo(causes[c.type],missingAfter,`真正的缺口是：${missingAfter.join('、')||'现有准备仍然不够'}。下一局看到前兆时，优先补这个。`,storiesForDeath(c.type),helpful));
 }
 function triggerMorningEvent(){
   if(game.day<=1||game.ending)return;
@@ -2009,6 +2010,8 @@ function nightIdentityLine(){
 let nightRuntimeActive=false;
 let nightStartSnapshot=null;
 let nightResourceUses=[];
+let nightStoryNotes=[];
+function addNightStory(text){if(text)nightStoryNotes.push(text);}
 function nightSnapshot(){
   return {hp:game.hp,food:game.food,water:game.water,morale:game.morale,campTrust:game.campTrust||0,shelterClues:game.shelterClues||0,reputation:game.reputation||0,inventory:{...(game.inventory||{})},storage:{...(game.storage||{})}};
 }
@@ -2017,16 +2020,17 @@ function showNightProgress(done){
   document.getElementById('nightEventMeta').textContent=`DAY ${game.day} · 夜间判定`;
   overlay.classList.add('show');fill.style.width='0%';pct.textContent='0';trait.style.display='none';ack.style.display='none';ack.onclick=null;
   const ni=nightIndex();
-  const lines=['🏠 检查住所完整度……','🎒 翻找今天带回来的破烂……',nightIdentityLine(),`✨ 检查天赋【${traitData().short}】今天有没有上班……`,'☠️ 确认阎王有没有刷新你的页面……'];
+  const lines=['🏠 门窗在夜风里轻轻响着……','🎒 你摸黑确认今天还剩下什么……',nightIdentityLine(),`✨ 【${traitData().short}】也在今晚留下了一点痕迹……`,'🌑 远处的动静终于慢慢散了……'];
   let i=0;
   const timer=setInterval(()=>{
     const target=Math.min(96,18+i*19);fill.style.width=target+'%';pct.textContent=target;line.textContent=lines[Math.min(i,lines.length-1)];
-    if(i===3){trait.style.display='block';trait.textContent=`【${traitData().short}】已纳入今晚判定`; }
+    if(i===3){trait.style.display='block';trait.textContent=`【${traitData().short}】${traitData().desc}`; }
     i++;
     if(i>=lines.length){
       clearInterval(timer);
       setTimeout(()=>{
-        fill.style.width=ni.score+'%';pct.textContent=ni.score;line.innerHTML=`判定完成：<strong>${ni.label}</strong><br><small>不会自动跳过，先看清楚再继续。</small>`;
+        const verdict=ni.score>=85?'门窗安静了下来。今晚，命运暂时没来收租。':ni.score>=65?'屋外偶尔还有动静，但你应该能把这一夜熬过去。':ni.score>=45?'你不敢睡沉。每一点响动，都像是麻烦在试门。':'这一夜很难熬。屋里缺的东西，黑暗不会替你补上。';
+        fill.style.width=ni.score+'%';pct.textContent=ni.score;line.innerHTML=`<strong>${ni.label}</strong><br><small>${verdict}</small>`;
         ack.style.display='block';
         ack.onclick=()=>{ack.style.display='none';overlay.classList.remove('show');done(ni);};
       },350);
@@ -2056,9 +2060,9 @@ function applyNightConsumption(){
   }
   if(game.food<=20){
     const sealed=totalItemCount('canned')>0&&!canOpenCanned('shelter');
-    game.hp-=game.food<=0?24:12;game.lastDamage=makeDeathInfo('饥饿与体力衰竭',[sealed?'能打开现有罐头的开罐器或撬棍':'可立即食用的食物'],sealed?'罐头确实在，但当前身份与工具无法把它变成食物；系统不会再把“拥有”和“能使用”混为一谈。':'背包和住所储藏都已经检查过，没有能立刻吃掉的食物。','夜间消耗后，可用食物仍不足以维持体力。',nightResourceUses.length?nightResourceUses.map(x=>`🛟 ${x}`):null);
+    game.hp-=game.food<=0?24:12;game.lastDamage=makeDeathInfo('饥饿与体力衰竭',[sealed?'能打开现有罐头的开罐器或撬棍':'可立即食用的食物'],sealed?'罐头就在旁边，可你没有能打开它的东西。末日甚至懒得配个拉环。':'背包和储藏里都没有能立刻吃掉的食物。','夜间消耗后，可用食物仍不足以维持体力。',nightResourceUses.length?nightResourceUses.map(x=>`🛟 ${x}`):null);
   }
-  if(game.water<=20){game.hp-=game.water<=0?40:20;game.lastDamage=makeDeathInfo('严重脱水',['饮用水或能处理应急水源的机会'],'背包和住所储藏都已经检查过；有水时系统会先自动饮用，不会抱着水渴死。','夜间消耗后，可饮用水仍然不足。',nightResourceUses.length?nightResourceUses.map(x=>`🛟 ${x}`):null);}
+  if(game.water<=20){game.hp-=game.water<=0?40:20;game.lastDamage=makeDeathInfo('严重脱水',['饮用水或能处理应急水源的机会'],'背包和储藏里已经没有能喝的水。','夜间消耗后，可饮用水仍然不足。',nightResourceUses.length?nightResourceUses.map(x=>`🛟 ${x}`):null);}
   if(game.food>45&&game.water>45)game.morale+=2;
 }
 function itemDeltaLines(before,after){
@@ -2080,7 +2084,7 @@ function nightOutcomeFrom(start){
   return {buffs:[...new Set(buffs)],debuffs:[...new Set(debuffs)]};
 }
 function nightOutcomeStory(start){
-  const stories=[];
+  const stories=[...nightStoryNotes];
   const clueBefore=start.shelterClues||0,clueAfter=game.shelterClues||0;
   if(clueAfter>clueBefore){
     if(clueAfter>=2){
@@ -2108,7 +2112,7 @@ function nightOutcomeStory(start){
   const imminent=(game.crisisPlan||[]).find(c=>c.day===game.day+1&&!(game.resolvedCrises||[]).includes(c.day));
   if(imminent){
     const advice=crisisLastChanceAdvice(imminent);
-    stories.push(advice.ready?`天亮时，${advice.label}就会真正压下来。你现有的${advice.need}能先挡住直接死亡；至于要付多少代价，得看住所和身体还能不能一起撑住。`:`天亮时，${advice.label}就会真正压下来。你在入夜前仍缺${advice.need}——系统不会悄悄判死，但下一次就是致命结算。`);
+    stories.push(advice.ready?`天亮时，${advice.label}就会真正压下来。你现有的${advice.need}能先保命；至于要付多少代价，得看住所和身体还能不能一起撑住。`:`天亮时，${advice.label}就会真正压下来。你在入夜前仍缺${advice.need}——下一关可能致命。`);
   }
   return stories.length?stories.join('<br><br>'):'先把这一晚发生了什么看清楚。点「知道了」以后才会进入第二天。';
 }
@@ -2116,7 +2120,7 @@ function showNightOutcome(){
   const start=nightStartSnapshot||nightSnapshot(); const out=nightOutcomeFrom(start);
   const buffHtml=out.buffs.length?out.buffs.map(x=>`<small>✓ ${x}</small>`).join(''):'<small>今晚没有额外增益。</small>';
   const debuffHtml=out.debuffs.length?out.debuffs.map(x=>`<small>• ${x}</small>`).join(''):'<small>今晚没有额外损失。</small>';
-  const rescueHtml=nightResourceUses.length?`<div class="survivalUse"><strong>🛟 系统先用了你已有的解法</strong>${nightResourceUses.map(x=>`<small>✓ ${x}</small>`).join('')}</div>`:'';
+  const rescueHtml=nightResourceUses.length?`<div class="survivalUse"><strong>🛟 今晚用掉的物资</strong>${nightResourceUses.map(x=>`<small>✓ ${x}</small>`).join('')}</div>`:'';
   const storyHtml=nightOutcomeStory(start);
   const c=document.getElementById('modalCard');
   c.innerHTML=`<div class="eventMeta">DAY ${game.day} · 夜间结算</div><div class="modalIcon">🌙</div><h2>今晚结算完成</h2><div class="eventBody"><p>${storyHtml}</p>${rescueHtml}<div class="nightOutcomeGrid"><div class="nightOutcomeCol buff"><strong>✨ BUFF / 收获</strong>${buffHtml}</div><div class="nightOutcomeCol debuff"><strong>⚠️ DEBUFF / 代价</strong>${debuffHtml}</div></div></div><div class="choiceList"><button type="button" class="choice" id="nightOutcomeAck">知道了 → 天亮</button></div>`;
@@ -2128,7 +2132,7 @@ function completeNightEvent(){
   game.hp=clamp(game.hp);game.food=clamp(game.food);game.water=clamp(game.water);game.morale=clamp(game.morale);
   const ni=nightIndex();game.nightlyHistory.unshift({day:game.day,score:ni.score,label:ni.label});game.nightlyHistory=game.nightlyHistory.slice(0,10);
   log(`🌙 DAY ${game.day} 夜间判定：${ni.score} · ${ni.label}。`);
-  game.nightResolving=false;nightRuntimeActive=false;nightStartSnapshot=null;nightResourceUses=[];save();
+  game.nightResolving=false;nightRuntimeActive=false;nightStartSnapshot=null;nightResourceUses=[];nightStoryNotes=[];save();
   if(checkEnding())return;
   advanceDay();
 }
@@ -2139,8 +2143,8 @@ function startNightEvent(ni){
   if(roll<.22){
     const alert=game.trait==='alert';
     choices.push(
-      {text:alert?'👂【警觉】隔着门先判断':'隔着门问是谁',desc:alert?'你听见门外不止一个人的脚步。':'可能得到情报，也可能惹麻烦。',fn:()=>{if(alert){traitTrigger('你提前听出了门外还有第二个人，避免直接开门。');game.morale+=4;addCampClue('你从门外人的谈话里听到了一个幸存者聚集地的方向。');}else if(game.trait==='social'||chance(.55)){if(game.trait==='social')traitTrigger('你把陌生人的戒心聊低了一点。');game.reputation+=5;addCampClue('夜访者告诉你一个幸存者聚集地的大致方向。');}else game.morale-=6;finishNightEvent();}},
-      {text:'不回应',desc:'安全，但可能错过线索。',fn:()=>{game.morale-=2;log('你没有回应门外的人。夜重新安静下来。');finishNightEvent();}}
+      {text:alert?'👂【警觉】隔着门先判断':'隔着门问是谁',desc:alert?'你听见门外不止一个人的脚步。':'可能得到情报，也可能惹麻烦。',fn:()=>{if(alert){traitTrigger('你提前听出了门外还有第二个人，避免直接开门。');game.morale+=4;addNightStory('你没有开门，只隔着门听完了两个人的低声争论。脚步离开前，他们提到城里还有一处亮着灯的聚集地。');addCampClue('你从门外人的谈话里听到了一个幸存者聚集地的方向。');}else if(game.trait==='social'||chance(.55)){if(game.trait==='social')traitTrigger('你把陌生人的戒心聊低了一点。');game.reputation+=5;addNightStory('你隔着门和陌生人聊了几句。对方始终没有靠近，只在离开前留下一句：“往有灯的地方找，那里还有人守夜。”');addCampClue('夜访者告诉你一个幸存者聚集地的大致方向。');}else{game.morale-=6;addNightStory('你隔着门问了几次，外面的人却突然不再回答。脚步在门口停了一会儿才离开。你什么消息也没换到，只剩下一点不安。');}finishNightEvent();}},
+      {text:'不回应',desc:'安全，但可能错过线索。',fn:()=>{game.morale-=2;log('你没有回应门外的人。夜重新安静下来。');addNightStory('你屏住呼吸，没有回应。门外的人又轻轻敲了两次，最终拖着脚步离开。门没有开，麻烦没有进来；对方可能带来的消息也一起消失在楼道里。');finishNightEvent();}}
     );
     openEvent('🚪','夜里有人敲门',`${summary}<p style="margin-top:12px">门外有人敲得很轻：“有人吗？”</p>`,choices,'夜间事件');return;
   }
@@ -2154,7 +2158,7 @@ function startNightEvent(ni){
   }
   if(roll<.60&&game.campUnlocked){
     const social=game.trait==='social';
-    openEvent('👥','据点传来消息',`${summary}<p style="margin-top:12px">你已经知道幸存者据点在哪里。今晚有人从那边经过。</p>`,[
+    openEvent('👥','据点传来消息',`${summary}<p style="margin-top:12px">你已经知道幸存者据点在哪里。今晚，一个从那边回来的人认出了你。<br><br>“据点还亮着灯。”对方压低声音，“不过守门的人开始记脸了。”</p>`,[
       {text:social?'🤝【社交达人】主动交换消息':'问问据点近况',fn:()=>{game.campTrust=Math.min(3,(game.campTrust||0)+1);if(social)traitTrigger('你又把一段普通对话聊成了关系进度。');else log('你和据点的关系更熟了一点。');finishNightEvent();}},
       {text:'不招惹陌生人',fn:()=>{log('你没有接触经过的人。');finishNightEvent();}}
     ],'夜间事件');return;
@@ -2192,15 +2196,15 @@ function endDay(force=false){
   if(!force&&imminent){
     const advice=crisisLastChanceAdvice(imminent);
     if(!advice.ready){
-      openEvent('⚠️','今天真的就到这里？',`明早将触发${advice.label}。\n\n你现在仍缺：${advice.need}。\n\n结束今天以后就不能再外出搜索，下一次将直接进入致命判定。`,[
+      openEvent('⚠️','今天真的就到这里？',`明早将触发${advice.label}。\n\n你现在仍缺：${advice.need}。\n\n结束今天以后就不能再外出搜索，明早可能活不过去。`,[
         {text:game.actions>0?'回去继续准备':'先回去检查物资',desc:game.actions>0?`你还有 ${game.actions} 点行动力。`:'行动力已经用完，但仍可检查背包、储藏和路线。',fn:()=>hideModal()},
-        {text:'还是结束今天',desc:'保留末日的赌命感；系统已经把风险说清楚。',fn:()=>{hideModal();endDay(true);}}
+        {text:'还是结束今天',desc:'你决定赌一把。',fn:()=>{hideModal();endDay(true);}}
       ],'生存预警');return;
     }
   }
   // 存档里残留的 nightResolving 不再拥有锁死按钮的权力；真正的流程只认本页运行时状态。
   if(game.nightResolving){game.nightResolving=false;save();}
-  nightRuntimeActive=true;game.nightResolving=true;nightResourceUses=[];nightStartSnapshot=nightSnapshot();
+  nightRuntimeActive=true;game.nightResolving=true;nightResourceUses=[];nightStoryNotes=[];nightStartSnapshot=nightSnapshot();
   applyNightConsumption();renderGame();save();
   showNightProgress(startNightEvent);
 }
@@ -2259,7 +2263,7 @@ function coldNight(){
   if(blanket){damage=0;moraleLoss=2;log('🛟 夜间保温：背包或住所储藏里的保暖毯自动铺开。保暖毯未消耗。');}
   else if(shelter>=2){damage=2;moraleLoss=4;log(`🏠 住所防护 ${shelterStars(shelter)} 挡住了大部分冷风。`);}
   game.morale-=moraleLoss;game.hp-=damage;
-  if(damage)game.lastDamage=makeDeathInfo('低温与体力衰竭',['保暖毯或更可靠的住所'],'系统已经检查背包与住所储藏；保暖准备存在时会先自动生效。','夜间突然降温，现有保温仍不足。');
+  if(damage)game.lastDamage=makeDeathInfo('低温与体力衰竭',['保暖毯或更可靠的住所'],'背包和储藏里都没有足够的保暖准备。','夜间突然降温，现有保温仍不足。');
   log(damage?`夜里突然降温。生命 -${damage}，士气 -${moraleLoss}。`:`夜里突然降温，但保暖毯把伤害挡住了。士气 -${moraleLoss}。`);renderGame();checkEnding();
 }
 function candleEvent(){
