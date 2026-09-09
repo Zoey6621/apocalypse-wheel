@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.2.4.6</title>
+<title>末日转盘 V0.2.4.7</title>
 <style>
   :root{
     --bg:#11130f;
@@ -55,7 +55,7 @@
   .gameGrid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.mainPanel,.sidePanel{border:1px solid var(--line);background:rgba(26,29,23,.96);border-radius:18px;padding:16px}
   .actionsHeader{display:flex;justify-content:space-between;align-items:center}.ap{color:var(--accent);font-weight:900}.locationGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}.location{padding:14px 8px;border-radius:13px;background:#252a21;border:1px solid #3d4436;color:var(--white);cursor:pointer;min-height:90px}.location:hover{border-color:#7b846c}.location:disabled{opacity:.4;cursor:not-allowed}.location strong{display:block;font-size:16px;margin-bottom:5px}.location small{color:#aeb6a3;line-height:1.4}
   .log{background:#11130f;border:1px solid #2e3329;border-radius:13px;padding:13px;min-height:160px;max-height:250px;overflow:auto;line-height:1.65;font-size:14px}.logItem{padding:8px 0;border-bottom:1px dashed #292d25}.logItem:last-child{border-bottom:none}.logDay{color:var(--accent);font-size:12px;font-weight:800}
-  .sideTitle{font-size:13px;color:var(--muted);font-weight:800;letter-spacing:.08em;margin:0 0 10px}.inventory{display:grid;gap:7px}.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;background:#242820;border-radius:10px;border:1px solid #343a2e}.itemName{font-size:14px}.itemBtns{display:flex;gap:5px}.mini{font-size:12px;padding:5px 7px;border-radius:7px;border:1px solid #4a5141;background:#30362b;color:white;cursor:pointer}.muted{color:var(--muted)}
+  .sideTitle{font-size:13px;color:var(--muted);font-weight:800;letter-spacing:.08em;margin:0 0 10px}.inventory{display:grid;gap:7px}.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;background:#242820;border-radius:10px;border:1px solid #343a2e}.itemName{font-size:14px}.itemBtns{display:flex;gap:5px}.mini{font-size:12px;padding:5px 7px;border-radius:7px;border:1px solid #4a5141;background:#30362b;color:white;cursor:pointer}.mini.discardItemBtn{border-color:#63453f;background:#2b211f;color:#e3b5ae}.muted{color:var(--muted)}
   .endDay{width:100%;margin-top:12px}.statusline{padding:11px 12px;margin-bottom:12px;border:1px dashed #4b5144;border-radius:11px;color:#cbd1c1;background:#20241d}
   .modal{display:none;position:fixed;inset:0;background:rgba(5,6,5,.78);z-index:20;align-items:center;justify-content:center;padding:16px}.modal.show{display:flex}.modalCard{width:min(620px,100%);max-height:88vh;overflow:auto;background:#1b1e18;border:1px solid #505849;border-radius:20px;padding:20px;box-shadow:0 30px 80px rgba(0,0,0,.5)}.modalIcon{font-size:46px}.modalCard h2{font-size:28px;margin:6px 0 10px}.modalCard p{color:#c5cbb9;line-height:1.75;white-space:pre-line}.choiceList{display:grid;gap:9px;margin-top:16px}.choice{padding:13px 14px;text-align:left;background:#292e25;border:1px solid #444c3c;color:white;border-radius:12px;cursor:pointer}.choice:hover{border-color:var(--accent)}.choice small{display:block;color:#aeb5a3;margin-top:4px}
   .lootGrid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.lootTag{padding:8px 10px;background:#2d3228;border:1px solid #474e3f;border-radius:999px}.risk{color:#e1877d;font-weight:800}
@@ -281,7 +281,7 @@
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.2.4.6</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.2.4.7</span></div>
     <div class="topbarTools">
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -297,7 +297,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.2.4.6：夜晚是蓝的，天亮是灰金的；背景终于不再只活在概念图里。</div>
+      <div class="tinyNote">V0.2.4.7：先看地点不扣行动力，真正开始搜索才算出发。</div>
     </div>
   </section>
 
@@ -471,7 +471,7 @@
 </div>
 
 <script>
-const VERSION = '0.2.4.6';
+const VERSION = '0.2.4.7';
 const SAVE_KEY = 'doomsdayWheel_v024_save';
 const TUTORIAL_KEY = 'doomsdayWheel_v024_tutorial_seen';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
@@ -793,6 +793,26 @@ function addStored(id,q=1){let added=0;game.storage=game.storage||{};for(let i=0
 function moveToStorage(id){if(!hasItem(id))return;if(!canStore(id,1)){toast('藏物空间也满了。');return;}removeItem(id,1);addStored(id,1);log(`你把${items[id].name}收进了${storageName()}。`);renderGame();}
 function moveToBag(id){if(!hasStored(id))return;if(!canAdd(id,1)){toast('随身背包装不下。');return;}game.storage[id]--;if(game.storage[id]<=0)delete game.storage[id];game.inventory[id]=(game.inventory[id]||0)+1;renderGame();}
 function storageName(){return {human:'住所储藏',chicken:'巢穴藏物',cockroach:'藏匿点',dog:'落脚点藏物',cat:'秘密角落',crow:'高处藏物',mouse:'洞穴藏物'}[game.identity]||'藏物点';}
+function discardOne(id,source='inventory'){
+  const bag=source==='storage'?(game.storage||{}):(game.inventory||{});
+  if(!items[id]||!bag[id])return false;
+  const place=source==='storage'?storageName():'随身背包';
+  bag[id]--;
+  if(bag[id]<=0)delete bag[id];
+  log(`你把${items[id].name}从${place}里丢掉了。`);
+  return true;
+}
+function discardItem(id,source='inventory'){
+  const bag=source==='storage'?(game.storage||{}):(game.inventory||{});
+  if(!items[id]||!bag[id])return;
+  const item=items[id],place=source==='storage'?storageName():'随身背包';
+  const critical=['medicalcase','blanket','purifier','gasmask','flashlight','battery','radio','routeMap','carKey','crowbar','opener'].includes(id);
+  const note=critical?'这件东西可能影响后续生存或结局。':'确认后会丢掉 1 件，不消耗行动力。';
+  openEvent('🗑️',`要丢掉${item.name}吗？`,`${item.icon} ${item.name} ×${bag[id]} · ${place}\n\n${note}`,[
+    {text:'丢掉 1 件',desc:'末日没有失物招领处。',fn:()=>{if(discardOne(id,source)){hideModal();renderGame();save();toast(`已丢弃 ${item.name}`);}}},
+    {text:'先留着',fn:hideModal}
+  ],'背包整理');
+}
 
 function initHome(){ document.getElementById('continueBtn').style.display=loadSave()?'inline-block':'none'; }
 
@@ -1041,18 +1061,19 @@ function itemPurpose(id){
 function renderInventory(){
   const ents=Object.entries(game.inventory);
   if(!ents.length) return '<div class="muted">空空如也。出去的时候你真的得靠自己。</div>';
-  return ents.map(([id,q])=>{const it=items[id];return `<div class="item"><span class="itemName">${it.icon} ${it.name} ×${q}${rarityTag(id)}<small class="itemEffect"><strong>${itemPurpose(id)}</strong>${it.note?` · ${it.note}`:''}</small></span><span class="itemBtns">${it.usable?`<button type="button" class="mini useItemBtn" data-item="${id}">使用</button>`:''}<button type="button" class="mini stashItemBtn" data-item="${id}">存入</button></span></div>`;}).join('');
+  return ents.map(([id,q])=>{const it=items[id];return `<div class="item"><span class="itemName">${it.icon} ${it.name} ×${q}${rarityTag(id)}<small class="itemEffect"><strong>${itemPurpose(id)}</strong>${it.note?` · ${it.note}`:''}</small></span><span class="itemBtns">${it.usable?`<button type="button" class="mini useItemBtn" data-item="${id}">使用</button>`:''}<button type="button" class="mini stashItemBtn" data-item="${id}">存入</button><button type="button" class="mini discardItemBtn" data-item="${id}" data-source="inventory">丢弃</button></span></div>`;}).join('');
 }
 function renderStorage(){
   const ents=Object.entries(game.storage||{});
   if(!ents.length) return '<div class="muted">这里还没囤下任何东西。</div>';
-  return ents.map(([id,q])=>{const it=items[id];return `<div class="item"><span class="itemName">${it.icon} ${it.name} ×${q}${rarityTag(id)}<small class="itemEffect"><strong>${itemPurpose(id)}</strong>${it.note?` · ${it.note}`:''}</small></span><span class="itemBtns">${it.usable?`<button type="button" class="mini useStoredBtn" data-item="${id}">使用</button>`:''}<button type="button" class="mini takeStoredBtn" data-item="${id}">取出</button></span></div>`;}).join('');
+  return ents.map(([id,q])=>{const it=items[id];return `<div class="item"><span class="itemName">${it.icon} ${it.name} ×${q}${rarityTag(id)}<small class="itemEffect"><strong>${itemPurpose(id)}</strong>${it.note?` · ${it.note}`:''}</small></span><span class="itemBtns">${it.usable?`<button type="button" class="mini useStoredBtn" data-item="${id}">使用</button>`:''}<button type="button" class="mini takeStoredBtn" data-item="${id}">取出</button><button type="button" class="mini discardItemBtn" data-item="${id}" data-source="storage">丢弃</button></span></div>`;}).join('');
 }
 function bindInventoryButtons(){
   document.querySelectorAll('.useItemBtn').forEach(function(b){b.addEventListener('click',function(){useItem(b.getAttribute('data-item'));});});
   document.querySelectorAll('.useStoredBtn').forEach(function(b){b.addEventListener('click',function(){useItem(b.getAttribute('data-item'),'storage');});});
   document.querySelectorAll('.stashItemBtn').forEach(function(b){b.addEventListener('click',function(){moveToStorage(b.getAttribute('data-item'));});});
   document.querySelectorAll('.takeStoredBtn').forEach(function(b){b.addEventListener('click',function(){moveToBag(b.getAttribute('data-item'));});});
+  document.querySelectorAll('.discardItemBtn').forEach(function(b){b.addEventListener('click',function(){discardItem(b.getAttribute('data-item'),b.getAttribute('data-source')||'inventory');});});
 }
 
 function useRadio(source='inventory'){
@@ -1371,12 +1392,10 @@ function searchLocation(loc){
   if(game.day>1&&!game.morningDone){toast('🌅 先处理今天早上的事件');return;}
   if(game.actions<=0){toast('⚡ 今天已经没有行动力了');return;}
   const st=getLocationState(loc); if(st.tier==='locked'){toast('这里已经失去功能了。');return;}
-  game.actions--; game.searches++;
   const def=locationDefs[loc],fx=dayEffect(),riskMod=(fx.riskMods&&fx.riskMods[loc])||0;
   const injuryRisk=game.injury===2?.12:(game.injury===1?.05:0);
   const alertMod=game.trait==='alert'?-.08:0;
   pendingSearch={loc,depth:1,risk:Math.max(.02,def.baseRisk+(st.risk||0)+riskMod+worldPhase().risk+injuryRisk+alertMod+identityRiskMod(loc)+(game.day>=7?.06:0)+(game.day>=9?.06:0)),status:st.label,state:st,rolls:1+(st.loot||0),rarityBonus:0,dangerCheck:true,searchMode:null};
-  renderGame();
   openSearchApproach();
 }
 function searchSceneCopy(loc){
@@ -1401,10 +1420,22 @@ function openSearchApproach(){
   const combo=lightReady?`<div class="comboHint ready"><strong>🔦 照明已经凑齐</strong>你摸了摸背包：手电筒和电池都在。装上以后，至少能看清里面。</div>`:`<div class="comboHint missing"><strong>深处没有照明</strong>带上手电筒和电池再来，会多一个不必摸黑赌命的选择。</div>`;
   const c=document.getElementById('modalCard');
   c.className='modalCard searchModalCard';
-  c.innerHTML=`<div class="eventMeta">DAY ${game.day} · ${def.name}探索</div><h2>${scene.title}</h2><div class="searchScene">${scene.line}<br>${st.desc}</div><div class="searchFacts"><span class="searchFact"><strong>更常见：</strong>${def.specialty}</span><span class="searchFact"><strong>要当心：</strong>${def.hazard}</span></div>${combo}<div class="searchApproach"><button type="button" class="approachBtn safe" data-approach="quick"><strong>快速搜一圈</strong><small>少停留，拿到什么算什么。</small></button><button type="button" class="approachBtn" data-approach="careful"><strong>仔细翻找</strong><small>多看几个角落，也多给危险一点时间。</small></button><button type="button" class="approachBtn hot" data-approach="deep"><strong>${deepTitle}</strong><small>${deepHint}</small></button><button type="button" class="approachBtn" id="leaveApproachBtn"><strong>离开这里</strong><small>这次行动已经花掉，但你不用继续把命押进去。</small></button></div>`;
+  c.innerHTML=`<div class="eventMeta">DAY ${game.day} · ${def.name}探索</div><h2>${scene.title}</h2><div class="searchScene">${scene.line}<br>${st.desc}</div><div class="searchFacts"><span class="searchFact"><strong>更常见：</strong>${def.specialty}</span><span class="searchFact"><strong>要当心：</strong>${def.hazard}</span></div>${combo}<div class="searchApproach"><button type="button" class="approachBtn safe" data-approach="quick"><strong>快速搜一圈</strong><small>少停留，拿到什么算什么。选择后消耗 1 点行动力。</small></button><button type="button" class="approachBtn" data-approach="careful"><strong>仔细翻找</strong><small>多看几个角落，也多给危险一点时间。选择后消耗 1 点行动力。</small></button><button type="button" class="approachBtn hot" data-approach="deep"><strong>${deepTitle}</strong><small>${deepHint}。选择后消耗 1 点行动力。</small></button><button type="button" class="approachBtn" id="leaveApproachBtn"><strong>暂时离开</strong><small>还没有正式出发，不消耗行动力。</small></button></div>`;
   c.querySelectorAll('[data-approach]').forEach(b=>b.onclick=()=>beginSearchApproach(b.getAttribute('data-approach')));
-  document.getElementById('leaveApproachBtn').onclick=()=>abandonHazardSearch(`你在${def.name}门口停了一会儿，最后还是转身离开。`);
+  document.getElementById('leaveApproachBtn').onclick=cancelSearchApproach;
   showModal();
+}
+function cancelSearchApproach(){
+  const ps=pendingSearch;if(!ps)return;
+  const name=locationDefs[ps.loc]?.name||'这个地点';
+  pendingSearch=null;hideModal();
+  log(`你看了看${name}的入口，决定先不进去。行动力没有消耗。`);
+  toast('没有消耗行动力');renderGame();save();
+}
+function commitSearchAction(){
+  if(!pendingSearch||game.actions<=0)return false;
+  game.actions--;game.searches++;
+  return true;
 }
 function darkZoneEligible(loc){
   const ps=pendingSearch;if(!ps||game.day<3||ps.searchMode!=='深入搜索')return false;
@@ -1476,8 +1507,9 @@ function maybeOfferDarkZone(loc,continuation){
 function beginSearchApproach(mode){
   const ps=pendingSearch;if(!ps)return;
   const cfg={quick:{risk:-.07,rolls:1,rare:0,name:'快速搜索'},careful:{risk:.04,rolls:2,rare:.02,name:'仔细翻找'},deep:{risk:.16,rolls:3,rare:.05,name:'深入搜索'}}[mode];
+  if(!commitSearchAction()){pendingSearch=null;hideModal();toast('⚡ 今天已经没有行动力了');renderGame();return;}
   ps.risk=Math.max(.02,ps.risk+cfg.risk);ps.rolls+=cfg.rolls-1;ps.rarityBonus+=cfg.rare;ps.searchMode=cfg.name;
-  hideModal();
+  renderGame();save();hideModal();
   const dangerProb=Math.min(.88,ps.risk+(ps.depth-1)*.07);
   ps.currentDangerProb=dangerProb;game.dangerFaced++;
   if(!chance(1-dangerProb)){triggerSearchDanger(ps.loc);return;}
