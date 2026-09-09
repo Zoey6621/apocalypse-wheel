@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>末日转盘 V0.2.4.4</title>
+<title>末日转盘 V0.2.4.5</title>
 <style>
   :root{
     --bg:#11130f;
@@ -163,13 +163,70 @@
   .firstBagPulse{animation:bagPulse 1s ease 2}@keyframes bagPulse{50%{box-shadow:0 0 0 6px rgba(217,173,67,.18)}}
   @media(max-width:740px){.secretGrid{grid-template-columns:1fr}.compactVitals{gap:5px}.vitalChip{font-size:11px;padding:6px 8px}}
 
+  /* V0.2.4.5 — 极简末日 UI / 剧情优先结算 */
+  body{background:
+    radial-gradient(circle at 50% -15%,rgba(99,91,57,.22),transparent 42%),
+    linear-gradient(180deg,#181b15 0,#0d0f0c 62%,#080a08 100%);}
+  body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background:
+    repeating-linear-gradient(112deg,transparent 0 21px,rgba(236,218,165,.025) 22px,transparent 23px 47px),
+    radial-gradient(circle at 12% 80%,rgba(217,173,67,.12),transparent 24%);mix-blend-mode:screen}
+  .app{max-width:1160px;padding:20px 18px 88px}
+  .topbar{padding:4px 2px 14px;border-bottom:1px solid rgba(217,173,67,.18)}
+  .brand{font-size:18px}.version{border-radius:6px;letter-spacing:.05em}
+  #game .survivalHeader{position:sticky;top:8px;margin:0 0 14px;padding:13px 15px;border:1px solid #403f31;border-radius:17px;background:rgba(19,22,17,.94);box-shadow:0 18px 55px rgba(0,0,0,.34);backdrop-filter:blur(12px)}
+  #game .gameHeader{margin-bottom:10px}.day{font-size:28px;letter-spacing:.06em;color:#ead49a}.identityBadge{background:#20241c;border-color:#514b37;color:#e8e2d2}
+  #game .compactVitals{position:absolute;right:15px;top:13px;justify-content:flex-end;margin:0;padding-right:190px}
+  #game .vitalChip{border-radius:8px;background:#1b1e18;border-color:#383d31;padding:7px 10px}
+  #game .worldProgress{margin-top:2px}.worldStep{border-radius:6px;background:#151812}.worldStep.now{color:#171914;box-shadow:0 4px 18px rgba(217,173,67,.15)}
+  .playStack{gap:14px}
+  .focusCard{position:relative;overflow:hidden;text-align:center;padding:31px 34px 28px;border-color:#665b3f;border-radius:20px;background:
+    linear-gradient(105deg,rgba(217,173,67,.055),transparent 30%,transparent 70%,rgba(217,173,67,.04)),
+    linear-gradient(145deg,#20231b,#151812);box-shadow:0 24px 60px rgba(0,0,0,.25)}
+  .focusCard:before,.focusCard:after{content:"";position:absolute;top:25px;width:16%;height:1px;background:linear-gradient(90deg,transparent,#8d7848)}
+  .focusCard:before{left:6%}.focusCard:after{right:6%;transform:scaleX(-1)}
+  .phaseEyebrow{font-size:12px;letter-spacing:.16em;margin-bottom:13px}
+  .focusCard h2{max-width:850px;margin:0 auto 11px;font-size:clamp(29px,4.5vw,48px);line-height:1.12;letter-spacing:.015em;color:#f2ecdd}
+  .focusText{max-width:760px;margin:0 auto;color:#c9c2ae;font-size:15px;line-height:1.8}
+  .quickRow{justify-content:center;margin-top:16px}.focusAP,.quickBag{border-radius:8px}
+  .routeCard,.actionCard,.utilityPanel{border-color:#3f4033;background:rgba(20,23,18,.96);box-shadow:0 18px 45px rgba(0,0,0,.18)}
+  .routeCard{border-radius:13px}.routeToggle{padding:13px 15px}
+  .actionCard{padding:18px;border-radius:20px}.actionHeading{padding-bottom:11px;border-bottom:1px solid rgba(217,173,67,.14)}
+  .locationGrid{grid-template-columns:repeat(4,1fr);gap:10px}
+  .location{isolation:isolate;min-height:148px;padding:16px 13px 13px;border-radius:14px;background:linear-gradient(150deg,#292d24,#191c17);box-shadow:inset 0 1px rgba(255,255,255,.025);transition:transform .16s ease,border-color .16s ease,filter .16s ease}
+  .location:hover{transform:translateY(-2px);filter:brightness(1.08);border-color:#9a7d3f}.location strong{font-size:18px;color:#f0eadb;margin-bottom:9px}.location small{line-height:1.5}
+  .location[data-loc="supermarket"],.location[data-loc="store"]{background:linear-gradient(145deg,rgba(83,64,37,.5),#1b1e18 68%)}
+  .location[data-loc="pharmacy"],.location[data-loc="school"]{background:linear-gradient(145deg,rgba(49,67,57,.48),#1a1d18 68%)}
+  .location[data-loc="farm"],.location[data-loc="park"]{background:linear-gradient(145deg,rgba(55,72,45,.5),#191d17 68%)}
+  .location[data-loc="gasstation"],.location[data-loc="warehouse"]{background:linear-gradient(145deg,rgba(78,48,42,.5),#1b1d18 68%)}
+  .locProfile{color:#e0ca86!important}.locHazard{color:#c89991!important}.locState{border-radius:6px;padding:4px 7px}
+  .shelterStrip{border-radius:12px}.secretLoc{border-radius:11px}
+  .primary{border-radius:9px;background:linear-gradient(180deg,#e6bc55,#c9992e);box-shadow:0 10px 28px rgba(217,173,67,.17)}
+  .secondary,.choice,.approachBtn{border-radius:9px}
+  .modal{background:rgba(5,7,5,.88);backdrop-filter:blur(5px)}
+  .modalCard{width:min(720px,100%);padding:28px;border-color:#6b6043;border-radius:22px;background:
+    linear-gradient(120deg,rgba(217,173,67,.04),transparent 36%),#151812;box-shadow:0 38px 110px rgba(0,0,0,.68),inset 0 1px rgba(255,255,255,.025)}
+  .eventMeta{text-align:center;font-size:12px;letter-spacing:.16em;margin-bottom:12px}.modalIcon{text-align:center;font-size:38px}.modalCard h2{text-align:center;font-size:clamp(29px,5vw,44px);line-height:1.15;margin:8px 0 14px;color:#f1ead9}.eventBody{color:#d0c8b6;font-size:15px;line-height:1.8}.choiceList{margin-top:19px}.choice{padding:14px 16px;background:#24281f;border-color:#4d503f}.choice:hover{border-color:#b39147;background:#2b2d22}.choice small{color:#a9ad9d;line-height:1.55}
+  .searchModalCard .modalIcon{display:none}.searchModalCard .searchScene{margin:0 auto 15px;text-align:center;color:#d0c8b6;line-height:1.75}.searchFacts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0}.searchFact{padding:7px 9px;border:1px solid #45483a;border-radius:7px;background:#1d211a;color:#bbbcae;font-size:12px}.searchFact strong{color:#e3cf90}.comboHint{margin:14px 0;padding:13px 14px;border:1px solid #776132;border-radius:10px;background:linear-gradient(90deg,rgba(217,173,67,.12),rgba(217,173,67,.035));color:#e7d9ae;line-height:1.65}.comboHint.ready{border-color:#8e773b}.comboHint.missing{border-color:#66413b;background:rgba(133,66,57,.09);color:#d7b3ad}.comboHint strong{display:block;color:#f0d477;margin-bottom:2px}.searchApproach{grid-template-columns:1fr;gap:9px}.approachBtn{min-height:67px;padding:14px 16px}.approachBtn.hot{border-color:#7b453d;background:linear-gradient(90deg,#2b211e,#211c19)}
+  .nightOverlay{background:rgba(5,7,5,.91);backdrop-filter:blur(6px)}.nightBox{width:min(700px,100%);padding:31px;border-color:#655a3f;background:#151812;border-radius:22px}.nightMoon{text-align:center}.nightTitle{text-align:center;font-size:32px;color:#f0e8d7}.nightLine{text-align:center;max-width:560px;margin:14px auto 18px;color:#c9c1ae}.nightTrack{height:5px;max-width:520px;margin:auto;border:0;background:#303329}.nightFill{background:linear-gradient(90deg,#7e6b3d,#e0b64d)}.nightPct{display:none}.nightTrait{max-width:520px;margin:14px auto 0}.nightAck{max-width:520px;margin:17px auto 0;border-radius:9px;background:#d4aa43;color:#171914}
+  .nightResultCard .modalIcon{display:none}.nightResultCard h2{color:#c95d4f}.nightStory{max-width:610px;margin:0 auto 18px;text-align:center;color:#e1d8c4;font-size:16px;line-height:1.85}.nightOutcomeGrid{gap:10px}.nightOutcomeCol{padding:14px;border-radius:10px}.nightOutcomeCol strong{font-size:16px}.nightOutcomeCol small{font-size:13px;line-height:1.7}.survivalUse{border-radius:10px}
+  #ending{padding:28px 0}.ending{position:relative;overflow:hidden;max-width:900px;margin:0 auto;padding:38px 42px;border:1px solid #746745;border-radius:24px;background:
+    radial-gradient(circle at 50% 12%,rgba(153,73,61,.11),transparent 32%),
+    linear-gradient(145deg,#1f231a,#11140f);color:#eee6d6;box-shadow:0 40px 120px rgba(0,0,0,.62)}
+  .ending:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.17;background:repeating-linear-gradient(117deg,transparent 0 32px,rgba(225,207,157,.04) 33px,transparent 34px 69px)}
+  .ending>*{position:relative}.endingMeta{text-align:center;color:var(--accent);font-size:12px;font-weight:950;letter-spacing:.17em}.ending h2{margin:20px 0 14px;text-align:center;color:#c85a4c;font-size:clamp(48px,9vw,88px);line-height:.98;letter-spacing:.02em}.ending.survived h2{color:#e0b34a}
+  .endingCause{max-width:720px;margin:0 auto;text-align:center;color:#f1eadb;font-size:clamp(18px,2.5vw,25px);font-weight:850;line-height:1.55}.endingQuote{max-width:690px;margin:13px auto 22px;padding:16px 0;text-align:center;color:#c9bfa9;font-size:18px;font-weight:750;line-height:1.75;border-top:1px solid rgba(217,173,67,.19)}
+  .endingDetailsToggle{display:flex;width:min(700px,100%);margin:0 auto 14px;justify-content:center;gap:8px;padding:13px;border:1px solid #655733;border-radius:9px;background:#191c16;color:#ddbd68;font-weight:900;cursor:pointer}.endingDetailsToggle span{transition:transform .18s}.endingDetailsToggle.open span{transform:rotate(180deg)}
+  .endingDetails{display:none;width:min(760px,100%);margin:0 auto 18px;padding:17px;border:1px solid #393c31;border-radius:12px;background:#12150f}.endingDetails.open{display:block}.report{color:#ddd4c2}.report div{border-color:#454438}.report div span{color:#9f9888!important}.achievement{background:#282b22}.deathBreakdown{margin:0 0 18px;background:#1d2119;border-color:#464638;color:#dfd6c4}.deathLabel{color:#a99f89}.deathBlock{border-color:#454438}.deathChip{background:#493b2d;color:#f0dcc2}.deathChip.good,.contribution{background:#2d3d2b;color:#d9ead3}.endingActions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}.endingActions .primary{min-width:280px;font-size:18px}.endingUtility{display:flex;justify-content:flex-end;margin-top:13px}
+  @media(max-width:900px){#game .compactVitals{position:static;padding-right:0;justify-content:flex-start}.locationGrid{grid-template-columns:repeat(2,1fr)}.app{max-width:760px}.focusCard:before,.focusCard:after{width:10%}}
+  @media(max-width:560px){.app{padding:12px 10px 70px}.topbar{align-items:flex-start}.topbarTools .ghost{padding:7px}.focusCard{padding:25px 17px}.focusCard h2{font-size:30px}.actionCard{padding:13px}.location{min-height:132px;padding:13px 10px}.location strong{font-size:16px}.modalCard,.nightBox{padding:22px 18px;border-radius:17px}.modalCard h2{font-size:30px}.ending{padding:30px 18px;border-radius:18px}.ending h2{font-size:49px}.endingCause{font-size:18px}.endingQuote{font-size:15px}.endingDetails{padding:12px}.endingActions .primary{width:100%;min-width:0}}
+
 </style>
 </head>
 <body>
 <noscript><div style="position:fixed;inset:12px 12px auto;z-index:9999;background:#3b1717;color:#fff;padding:14px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif">⚠️ 当前页面没有运行 JavaScript，所以游戏按钮不会工作。请把 HTML 保存到「文件」，再用 Safari / Chrome 打开。</div></noscript>
 <div class="app">
   <div class="topbar">
-    <div class="brand">末日转盘 <span class="version">V0.2.4.4</span></div>
+    <div class="brand">末日转盘 <span class="version">V0.2.4.5</span></div>
     <div class="topbarTools">
       <button type="button" class="ghost" id="debugTop">调试</button>
       <button type="button" class="ghost" id="resetTop">重置</button>
@@ -185,7 +242,7 @@
       <button type="button" class="primary" id="newGameBtn">开始新人生 🎡</button>
       <button type="button" class="secondary" id="continueBtn" style="margin-left:8px;display:none">继续上次存档</button>
       <div id="runtimeNotice" class="runtimeNotice blocked">⚠️ 正在检查游戏脚本……如果这条提示一直不变，说明当前预览禁止运行 JavaScript，请把文件保存后用 Safari / Chrome 打开。</div>
-      <div class="tinyNote">V0.2.4.4：危机会检查背包与储藏，实际消耗会写清楚。剩下的，交给运气。</div>
+      <div class="tinyNote">V0.2.4.5：剧情站到前面，账单退到后面。该救命的物资仍然不会装瞎。</div>
     </div>
   </section>
 
@@ -324,16 +381,20 @@
   </section>
 
   <section id="ending" class="screen">
-    <div class="ending">
-      <div style="font-size:12px;font-weight:900;letter-spacing:.15em">末日生存报告</div>
+    <div class="ending" id="endingCard">
+      <div class="endingMeta" id="endingMeta">DAY 1 · 本局结束</div>
       <h2 id="endingTitle">结局</h2>
-      <div class="report" id="report"></div>
-      <div class="deathBreakdown" id="deathBreakdown"></div>
+      <div class="endingCause" id="endingCause"></div>
       <div class="endingQuote" id="endingQuote"></div>
-      <div id="achievementList"></div>
-      <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="endingDetailsToggle" id="endingDetailsToggle">查看本局结算详情 <span>▾</span></button>
+      <div class="endingDetails" id="endingDetails">
+        <div class="deathBreakdown" id="deathBreakdown"></div>
+        <div class="report" id="report"></div>
+        <div id="achievementList"></div>
+        <div class="endingUtility"><button type="button" class="secondary" id="copyReportBtn">复制本局报告</button></div>
+      </div>
+      <div class="endingActions">
         <button type="button" class="primary" id="againBtn">再活一次 🎡</button>
-        <button type="button" class="secondary" id="copyReportBtn">复制报告</button>
       </div>
     </div>
   </section>
@@ -345,29 +406,29 @@
   <div class="nightBox">
     <div class="eventMeta" id="nightEventMeta">DAY 1 · 夜间判定</div>
     <div class="nightMoon">🌙</div>
-    <div class="nightTitle">今夜生存判定中……</div>
-    <div class="nightLine" id="nightLine">正在检查你今天到底做了些什么。</div>
+    <div class="nightTitle">夜色正在往下压……</div>
+    <div class="nightLine" id="nightLine">屋外安静得不太像好事。</div>
     <div class="nightTrack"><div class="nightFill" id="nightFill"></div></div>
-    <div class="nightPct"><span>状态指数</span><strong id="nightPct">0</strong></div>
+    <div class="nightPct"><span>夜色渐深</span><strong id="nightPct">0</strong></div>
     <div class="nightTrait" id="nightTrait"></div>
-    <button type="button" class="nightAck" id="nightProgressAck">知道了，看看今晚发生什么 →</button>
+    <button type="button" class="nightAck" id="nightProgressAck">看看门外发生了什么 →</button>
   </div>
 </div>
 
 <script>
-const VERSION = '0.2.4.4';
+const VERSION = '0.2.4.5';
 const SAVE_KEY = 'doomsdayWheel_v024_save';
 const TUTORIAL_KEY = 'doomsdayWheel_v024_tutorial_seen';
 const ACH_KEY = 'doomsdayWheel_v011_ach';
 
 const identities = [
-  {id:'human', label:'👤 人类', short:'人类', color:'#8f6a45', desc:'工具、背包、谈判。你能做很多事，也因此很容易把自己作死。', cap:9, storageCap:16, foodUse:15, waterUse:20, weight:35},
-  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:4, storageCap:8, foodUse:8, waterUse:10, weight:14},
-  {id:'cockroach', label:'🪳 蟑螂', short:'蟑螂', color:'#5f6a46', desc:'吃得少、喝得少、擅长钻缝。末日未必能杀死你，但鞋底可以。', cap:3, storageCap:6, foodUse:3, waterUse:4, weight:14},
-  {id:'dog', label:'🐕 狗', short:'狗', color:'#786348', desc:'嗅觉灵、讨人喜欢，能比别人更早察觉一些危险；缺点是背包基本靠嘴。', cap:5, storageCap:8, foodUse:11, waterUse:13, weight:12},
-  {id:'cat', label:'🐈 猫', short:'猫', color:'#6b665b', desc:'敏捷、擅长脱身，对危险地点有天然警觉。至于听不听你的安排，是另一回事。', cap:4, storageCap:7, foodUse:8, waterUse:10, weight:10},
-  {id:'crow', label:'🐦‍⬛ 乌鸦', short:'乌鸦', color:'#4d5660', desc:'能从高处观察城市，探索风险低一些，也更容易看见特别的东西。重物就别想了。', cap:3, storageCap:6, foodUse:7, waterUse:9, weight:7},
-  {id:'mouse', label:'🐀 老鼠', short:'老鼠', color:'#716457', desc:'低消耗、会钻洞、很会捡漏。只要这一局没有猫把你当玩法内容。', cap:3, storageCap:7, foodUse:5, waterUse:6, weight:8}
+  {id:'human', label:'👤 人类', short:'人类', color:'#8f6a45', desc:'工具、背包、谈判。你能做很多事，也因此很容易把自己作死。', cap:9, storageCap:16, foodUse:18, waterUse:23, weight:35},
+  {id:'chicken', label:'🐔 鸡', short:'鸡', color:'#a76445', desc:'需求低，会下蛋，但对饥饿的人类来说，你看起来有一点像移动物资。', cap:4, storageCap:8, foodUse:11, waterUse:14, weight:14},
+  {id:'cockroach', label:'🪳 蟑螂', short:'蟑螂', color:'#5f6a46', desc:'吃得少、喝得少、擅长钻缝。末日未必能杀死你，但鞋底可以。', cap:3, storageCap:6, foodUse:7, waterUse:9, weight:14},
+  {id:'dog', label:'🐕 狗', short:'狗', color:'#786348', desc:'嗅觉灵、讨人喜欢，能比别人更早察觉一些危险；缺点是背包基本靠嘴。', cap:5, storageCap:8, foodUse:14, waterUse:18, weight:12},
+  {id:'cat', label:'🐈 猫', short:'猫', color:'#6b665b', desc:'敏捷、擅长脱身，对危险地点有天然警觉。至于听不听你的安排，是另一回事。', cap:4, storageCap:7, foodUse:11, waterUse:14, weight:10},
+  {id:'crow', label:'🐦‍⬛ 乌鸦', short:'乌鸦', color:'#4d5660', desc:'能从高处观察城市，探索风险低一些，也更容易看见特别的东西。重物就别想了。', cap:3, storageCap:6, foodUse:10, waterUse:13, weight:7},
+  {id:'mouse', label:'🐀 老鼠', short:'老鼠', color:'#716457', desc:'低消耗、会钻洞、很会捡漏。只要这一局没有猫把你当玩法内容。', cap:3, storageCap:7, foodUse:8, waterUse:10, weight:8}
 ];
 const traits = [
   {id:'lucky', label:'🍀 幸运儿', short:'幸运儿', desc:'危险里更容易全身而退，也更容易碰见好东西。'},
@@ -837,6 +898,21 @@ function renderGameArchiveCard(){
   return `<span class="archiveBadge ${card.special?'':'normal'}">${card.badge}</span><div class="archiveTitle"><span class="archiveIcon">${card.icon}</span>${card.title}</div><div class="archiveDesc">${card.desc}</div><div class="archiveMeta">${idData().short} · ${traitData().short} · ${birthData().short} · 当前住所 ${shelterStars()}</div>`;
 }
 
+function daytimeNarrative(morningLocked){
+  const fx=dayEffect(),phase=worldPhase();
+  if(morningLocked)return {eyebrow:`DAY ${game.day} · 天亮`,title:'外面的世界先动了一步',text:'先看清今早发生了什么，再决定今天把命押在哪条路上。'};
+  if(game.actions<=0)return {eyebrow:`DAY ${game.day} · 入夜前`,title:'今天能做的都做了',text:'检查背包和住所。等你按下结束今天，门外的动静才会给出答案。'};
+  if(String(fx.name).startsWith('最后准备：')){
+    const danger=String(fx.name).split('：')[1]||'麻烦';
+    return {eyebrow:`DAY ${game.day} · 最后准备`,title:`${danger}明天就到`,text:fx.desc};
+  }
+  if(fx.name==='普通的一天'){
+    const title=game.day<=2?'街道还认得昨天的样子':game.day<=4?'货架正在比人心先变空':game.day<=7?'熟悉的地方一处处熄灯':'城里剩下的路不多了';
+    return {eyebrow:`DAY ${game.day} · ${phase.name}`,title,text:`${phase.label}。今天没有额外消息，只能按自己的判断行动。`};
+  }
+  return {eyebrow:`DAY ${game.day} · ${phase.name}`,title:fx.name,text:`${phase.label}。${fx.desc}`};
+}
+
 function renderGame(){
   if(!game) return;
   game.hp=clamp(game.hp); game.food=clamp(game.food); game.water=clamp(game.water); game.morale=clamp(game.morale);
@@ -846,8 +922,8 @@ function renderGame(){
   vitalMeta.forEach(([k,icon])=>{const el=document.getElementById(k+'Val');el.textContent=`${icon} ${statusWord(game[k],k)}`;el.className=`vitalChip ${statusClass(game[k])}`;el.title=`${k}: ${game[k]}/100`;});
   document.getElementById('apVal').textContent=game.actions;document.getElementById('apMaxVal').textContent=game.maxActions||2;
   const morningLocked=game.day>1 && !game.morningDone;
-  const fx=dayEffect(); const phase=worldPhase();
-  document.getElementById('phaseEyebrow').textContent=morningLocked?'今天早上':'当前局势'; document.getElementById('focusTitle').textContent=morningLocked?'先看看外面发生了什么':(game.actions>0?fx.name:'今天的行动已经用完'); document.getElementById('actionTitle').textContent=morningLocked?'先处理今天的开场':(game.actions>0?'选择今天的行动':'准备结束今天'); document.getElementById('statusline').textContent=morningLocked?'天亮了。世界先动了一步——处理完这件事，你再决定今天去哪。':`${phase.label}。${fx.desc}${game.trait==='curious'?' 你的好奇心正在鼓励你做一些不太理智的事。':''}`;
+  const fx=dayEffect(); const phase=worldPhase(); const scene=daytimeNarrative(morningLocked);
+  document.getElementById('phaseEyebrow').textContent=scene.eyebrow; document.getElementById('focusTitle').textContent=scene.title; document.getElementById('actionTitle').textContent=morningLocked?'先处理今天的开场':(game.actions>0?'选择今天的行动':'准备结束今天'); document.getElementById('statusline').textContent=`${scene.text}${game.trait==='curious'?' 你的好奇心正在鼓励你再多看一眼。':''}`;
   document.getElementById('shelterName').textContent=birthData().short;
   document.getElementById('shelterStars').textContent=shelterStars();
   document.getElementById('shelterLevelText').textContent=shelterLabel();
@@ -1248,15 +1324,31 @@ function searchLocation(loc){
   renderGame();
   openSearchApproach();
 }
+function searchSceneCopy(loc){
+  return {
+    supermarket:{title:'卷帘门还在晃',line:'货架外侧还散着东西，后仓却黑得像吞掉了一整条走廊。'},
+    store:{title:'冰柜早就不冷了',line:'门口看着安静，收银台后面却留下了几道匆忙翻找的痕迹。'},
+    pharmacy:{title:'碎玻璃铺满了门口',line:'药架被扫过一轮，锁着的员工区里仍传来轻微碰撞声。'},
+    school:{title:'走廊尽头还有一扇门开着',line:'课桌被推成路障，旧广播里只剩断断续续的电流声。'},
+    gasstation:{title:'汽油味比招牌更醒目',line:'便利店里还亮着一盏应急灯，维修间深处却完全看不见。'},
+    farm:{title:'风里有谷物，也有脚步',line:'地上散着能吃的东西，远处的围栏后面却有什么一直跟着你。'},
+    park:{title:'长椅下面藏着别人的慌张',line:'这里没有墙，也没有真正的退路，只有被匆忙丢下的零碎物资。'},
+    warehouse:{title:'铁门里面有人来过',line:'外层货架被翻空了，越往里，箱子越完整，声音也越不对劲。'}
+  }[loc]||{title:'这里还没有完全空掉',line:'能带走的东西和会找上门的麻烦，都藏在更里面。'};
+}
 function openSearchApproach(){
   const ps=pendingSearch;if(!ps)return;const def=locationDefs[ps.loc],st=ps.state;
   const lightReady=hasItem('flashlight')&&hasItem('battery');
   const lightMissing=!hasItem('flashlight')?'手电筒':(!hasItem('battery')?'随身电池':'');
   const deepTitle=lightReady?'🔦 装上手电，往深处走':'往深处走';
-  const deepHint=lightReady?'高风险 · 手电 + 电池已就绪，遇到无光深层区可以进入':`高风险 · 无光深层区需要手电 + 电池（当前缺${lightMissing}）`;
+  const deepHint=lightReady?'手电筒和电池都在身上；遇到无光区域时可以组装照明':`深处可能完全无光；现在还缺${lightMissing}`;
+  const scene=searchSceneCopy(ps.loc);
+  const combo=lightReady?`<div class="comboHint ready"><strong>🔦 照明已经凑齐</strong>你摸了摸背包：手电筒和电池都在。装上以后，至少能看清里面。</div>`:`<div class="comboHint missing"><strong>深处没有照明</strong>带上手电筒和电池再来，会多一个不必摸黑赌命的选择。</div>`;
   const c=document.getElementById('modalCard');
-  c.innerHTML=`<div class="modalIcon">${def.icon}</div><h2>${def.name} · ${st.label}</h2><p>${st.desc}\n\n<b>这里更常见：</b>${def.specialty}\n<b>主要麻烦：</b>${def.hazard}\n\n你准备怎么搜？越往里面走，留下来的东西通常越好，代价也很直接。</p><div class="searchApproach"><button type="button" class="approachBtn safe" data-approach="quick"><strong>快速搜一圈</strong><small>风险较低 · 常见物资为主</small></button><button type="button" class="approachBtn" data-approach="careful"><strong>仔细翻找</strong><small>风险中等 · 进阶物资机会提高</small></button><button type="button" class="approachBtn hot" data-approach="deep"><strong>${deepTitle}</strong><small>${deepHint}</small></button></div>`;
+  c.className='modalCard searchModalCard';
+  c.innerHTML=`<div class="eventMeta">DAY ${game.day} · ${def.name}探索</div><h2>${scene.title}</h2><div class="searchScene">${scene.line}<br>${st.desc}</div><div class="searchFacts"><span class="searchFact"><strong>更常见：</strong>${def.specialty}</span><span class="searchFact"><strong>要当心：</strong>${def.hazard}</span></div>${combo}<div class="searchApproach"><button type="button" class="approachBtn safe" data-approach="quick"><strong>快速搜一圈</strong><small>少停留，拿到什么算什么。</small></button><button type="button" class="approachBtn" data-approach="careful"><strong>仔细翻找</strong><small>多看几个角落，也多给危险一点时间。</small></button><button type="button" class="approachBtn hot" data-approach="deep"><strong>${deepTitle}</strong><small>${deepHint}</small></button><button type="button" class="approachBtn" id="leaveApproachBtn"><strong>离开这里</strong><small>这次行动已经花掉，但你不用继续把命押进去。</small></button></div>`;
   c.querySelectorAll('[data-approach]').forEach(b=>b.onclick=()=>beginSearchApproach(b.getAttribute('data-approach')));
+  document.getElementById('leaveApproachBtn').onclick=()=>abandonHazardSearch(`你在${def.name}门口停了一会儿，最后还是转身离开。`);
   showModal();
 }
 function darkZoneEligible(loc){
@@ -1296,10 +1388,10 @@ function enterDarkZone(loc){
   consumePossession('battery',1);
   const warning='手电光至少让你看见了风险。至于看见以后还要不要贪，是另一回事。';
   const choices=[
-    {text:'贴着墙慢慢搜',desc:'保守进入。保证找到 1 件稀有资源，但不继续赌最深处。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,0,'你用手电确认了地面和退路，贴着墙慢慢往里搜。');}},
-    {text:'直接冲最里面的封闭柜',desc:'可能多拿 1 件稀有资源；也可能把“深处”变成你的永久住址。',fn:()=>{hideModal();if(chance(.46)){game.hp-=18;game.injury=Math.max(game.injury,1);resolveDarkZoneLoot(loc,1,'你硬闯到最里面，带着伤把封闭柜里的东西拖了出来。');}else{fatalExploration('黑暗深处没有第二次机会','手电照见了危险，你还是选择直接冲向最里面的柜子。退路在混乱里被切断。','深层探索事故',{trauma:true,missing:['更谨慎的深层探索判断'],couldHaveSaved:'手电已经帮你看见了风险。真正缺的是见好就收。',context:'无光深层区域里存在明显障碍和不稳定结构，你仍选择直接冲最深处。'});}}}
+    {text:'贴着墙慢慢搜',desc:'先确认退路。里面至少有一只箱子还没被翻过。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,0,'你用手电确认了地面和退路，贴着墙慢慢往里搜。');}},
+    {text:'直接冲最里面的封闭柜',desc:'那里可能还有更多，也可能把“深处”变成你的永久住址。',fn:()=>{hideModal();if(chance(.46)){game.hp-=18;game.injury=Math.max(game.injury,1);resolveDarkZoneLoot(loc,1,'你硬闯到最里面，带着伤把封闭柜里的东西拖了出来。');}else{fatalExploration('黑暗深处没有第二次机会','手电照见了危险，你还是选择直接冲向最里面的柜子。退路在混乱里被切断。','深层探索事故',{trauma:true,missing:['更谨慎的深层探索判断'],couldHaveSaved:'手电已经帮你看见了风险。真正缺的是见好就收。',context:'无光深层区域里存在明显障碍和不稳定结构，你仍选择直接冲最深处。'});}}}
   ];
-  if(hasItem('crowbar'))choices.splice(1,0,{text:'用撬棍慢慢开最里面的柜子',desc:'风险低很多，也更容易多找到一件稀有物资。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,1,'你用撬棍一点点打开封闭柜，没有把整片结构一起撬下来。');}});
+  if(hasItem('crowbar'))choices.splice(1,0,{text:'用撬棍慢慢开最里面的柜子',desc:'不用蛮撞，也不用把整片货架一起惊醒。',fn:()=>{hideModal();resolveDarkZoneLoot(loc,1,'你用撬棍一点点打开封闭柜，没有把整片结构一起撬下来。');}});
   openEvent('🔦','光照到了一些不该摸黑碰的东西',`${darkZoneDescription(loc)}
 
 ${warning}`,choices);
@@ -1312,8 +1404,8 @@ function maybeOfferDarkZone(loc,continuation){
     openEvent('🌑','里面还有一层',`${darkZoneDescription(loc)}
 
 你背包里的手电和电池终于有了一个非常具体的用途。`,[
-      {text:'装上电池，进去',desc:'消耗 1 节电池。这里是稀有资源的主要来源之一，同时也是高危区域。',fn:()=>{hideModal();enterDarkZone(loc);}},
-      {text:'省下电池，只搜外面',desc:'放弃深层稀有资源，继续普通搜索。',fn:()=>{hideModal();continuation();}}
+      {text:'装上电池，进去',desc:'会消耗 1 节电池。光能照见路，不能替你做决定。',fn:()=>{hideModal();enterDarkZone(loc);}},
+      {text:'省下电池，只搜外面',desc:'不碰那扇门，继续翻外层货架。',fn:()=>{hideModal();continuation();}}
     ]);
   }else{
     const lack=!hasItem('flashlight')?'手电筒':(!hasItem('battery')?'随身电池':'照明工具');
@@ -1387,6 +1479,7 @@ function renderLootChoice(){
     return `<div class="item ${rare.key==='rare'?'rareFlash':''}"><span class="itemName">${it.icon} ${it.name} ×${q}${rarityTag(id)}${it.note?`<small class="itemEffect">${it.note}</small>`:''}</span><span class="itemBtns"><button type="button" class="mini lootTakeBtn" data-item="${id}">带走 1 个</button>${useBtn}</span></div>`;
   }).join('') : '<div class="muted">这轮找到的东西已经处理完了。</div>';
   const modal=document.getElementById('modalCard');
+  modal.className='modalCard';
   modal.innerHTML=`<div class="modalIcon">${locationDefs[ps.loc].icon}</div><h2>${locationDefs[ps.loc].name} · ${ps.searchMode||ps.status}</h2><p>${hasRare?'你翻到了一样明显不太常见的东西。先别激动，背包装得下再说。':'这次你找到了一些还能用的东西。'}<br><b>拿什么，你自己选。</b></p><div class="inventory">${lootRows}</div><p class="tinyNote">当前携带空间：${capacity} 格。常见物资维持生存，进阶物资更能扛灾难，稀有资源可能直接改变后面的选择。</p><p>当前风险：<span class="riskBand risk-${band.cls}">${band.label}</span></p><div class="choiceList"><button type="button" class="choice" id="leaveSearchBtn">见好就收<small>没拿走的东西会留在这里。</small></button><button type="button" class="choice" id="greedySearchBtn">再搏一把 🎡<small>放弃这轮没拿走的物资，继续往里搜；下一轮更危险，也更容易出好东西。</small></button></div>`;
   document.querySelectorAll('.lootTakeBtn').forEach(b=>b.addEventListener('click',()=>takeLootItem(b.getAttribute('data-item'))));
   document.querySelectorAll('.lootUseBtn').forEach(b=>b.addEventListener('click',()=>useLootOnSite(b.getAttribute('data-item'))));
@@ -1425,6 +1518,7 @@ function renderSwapChoice(newId){
   if(!pendingSwapSelection || pendingSwapSelection.__newId!==newId) pendingSwapSelection={__newId:newId};
   const held=Object.entries(game.inventory);
   const modal=document.getElementById('modalCard');
+  modal.className='modalCard';
   const rows=held.length?held.map(([id,q])=>{
     const selected=pendingSwapSelection[id]||0;
     return `<button type="button" class="choice swapItem ${selected?'selected':''}" data-drop="${id}"><strong>${items[id].icon} ${items[id].name} ×${q}</strong><small>${items[id].size||1} 格/个 · 已选择丢 ${selected} 个｜点一下增加，选满后再点会清零</small></button>`;
@@ -1736,7 +1830,7 @@ function triggerLastChance(c){
   const omen={water:'昨晚水管断断续续地响了几声，今早只剩一股很细的水。',cold:'昨晚窗缝里的风已经像刀子，玻璃边缘结了一层薄霜。',unrest:'昨晚街口一直有人跑动，卷帘门被砸的声音持续到后半夜。',smoke:'昨晚风里一直带着焦味，远处的黑烟比昨天更低。'}[c.type];
   const verdict=advice.ready?`你已经准备好了${advice.need}。今天别弄丢；多补一点，能少付些代价。`:`当前最要命的缺口：${advice.need}。今天结束时如果还没有补上，明早的${advice.label}可能会要你的命。`;
   openEvent(info.icon,`${advice.label}来临前，只剩今天`,`${omen}\n\n${verdict}\n\n去哪里找：${advice.where}。`,[
-    {text:'记住缺口，开始最后准备',desc:'今天仍有完整行动力；提示只给方向，不保证一定搜到。',fn:()=>finishMorning(`最后准备：${advice.label}`,`明天将触发${advice.label}。${advice.ready?'已有保命方案，别弄丢。':`最关键：${advice.need}。`}`,`⚠️ 明天将触发${advice.label}。${verdict}`)}
+    {text:'记住缺口，开始最后准备',desc:'天还没黑，你还有时间去找。',fn:()=>finishMorning(`最后准备：${advice.label}`,`明天将触发${advice.label}。${advice.ready?'已有保命方案，别弄丢。':`最关键：${advice.need}。`}`,`⚠️ 明天将触发${advice.label}。${verdict}`)}
   ],'生存预警');
 }
 function crisisMissing(type,facts=crisisResourceSnapshot()){
@@ -1846,7 +1940,7 @@ function triggerCrisis(c){
 }
 function showCrisisResult(icon,title,intro,feedback,consequence){
   const uses=feedback.length?`<div class="crisisResult">${feedback.map(x=>`<div>✓ ${x}</div>`).join('')}</div>`:'<div class="crisisResult"><div>这次没有消耗道具。</div></div>';
-  openEvent(icon,title,`<p>${intro}</p>${uses}<div class="survivalUse"><strong>${consequence}</strong><small>所有实际消耗都已列在上面，没有后台偷偷吞东西。</small></div>`,[
+  openEvent(icon,title,`<p>${intro}</p>${uses}<div class="survivalUse"><strong>${consequence}</strong></div>`,[
     {text:'知道了，继续今天',fn:()=>{hideModal();renderGame();save();}}
   ],'危机结算');
 }
@@ -1992,9 +2086,8 @@ function nightIndex(){
   return {score,label,buffs,debuffs,parts:[...buffs,...debuffs]};
 }
 function nightSummaryHtml(ni){
-  const good=ni.buffs.length?ni.buffs.map(x=>`<small>✓ ${x}</small>`).join(''):'<small>今晚没有额外有利因素。</small>';
-  const bad=ni.debuffs.length?ni.debuffs.map(x=>`<small>• ${x}</small>`).join(''):'<small>今晚没有额外不利因素。</small>';
-  return `<div class="nightStatus"><strong>🌙 今夜状态：${ni.label}</strong><span class="nightExplain">状态指数 ${ni.score} · 这是准备度，不是死亡概率。</span></div><div class="nightOutcomeGrid"><div class="nightOutcomeCol buff"><strong>🟢 有利因素</strong>${good}</div><div class="nightOutcomeCol debuff"><strong>🔴 不利因素</strong>${bad}</div></div>`;
+  const line=ni.score>=78?'屋里的东西各归各位，门外的声音也隔得很远。':ni.score>=58?'偶尔有动静贴着墙过去，但今晚大概还能睡。':ni.score>=38?'你不敢睡沉。每一点响动都像有人在试门。':'屋里缺的东西，黑暗不会替你补上。';
+  return `<div class="nightStatus"><strong>🌙 ${ni.label}</strong><span class="nightExplain">${line}</span></div>`;
 }
 function nightIdentityLine(){
   return {
@@ -2020,7 +2113,7 @@ function showNightProgress(done){
   document.getElementById('nightEventMeta').textContent=`DAY ${game.day} · 夜间判定`;
   overlay.classList.add('show');fill.style.width='0%';pct.textContent='0';trait.style.display='none';ack.style.display='none';ack.onclick=null;
   const ni=nightIndex();
-  const lines=['🏠 门窗在夜风里轻轻响着……','🎒 你摸黑确认今天还剩下什么……',nightIdentityLine(),`✨ 【${traitData().short}】也在今晚留下了一点痕迹……`,'🌑 远处的动静终于慢慢散了……'];
+  const lines=['门窗在夜风里轻轻响着……','你摸黑确认今天还剩下什么……',nightIdentityLine(),`【${traitData().short}】让你比平时多留意了一会儿……`,'远处的动静终于慢慢散了……'];
   let i=0;
   const timer=setInterval(()=>{
     const target=Math.min(96,18+i*19);fill.style.width=target+'%';pct.textContent=target;line.textContent=lines[Math.min(i,lines.length-1)];
@@ -2088,17 +2181,17 @@ function nightOutcomeStory(start){
   const clueBefore=start.shelterClues||0,clueAfter=game.shelterClues||0;
   if(clueAfter>clueBefore){
     if(clueAfter>=2){
-      stories.push('今晚听来的消息和此前的传闻终于对上了。你已经锁定幸存者据点的位置，地图上的问号亮了起来。找到门只是第一步；下一步，是去见那里的人，让他们愿意接纳你。');
+      stories.push('两条消息终于对上了。你把那个地址重重圈住：幸存者据点找到了。铁门后面，也许真的还有灯。');
     }else{
-      stories.push(`今晚听来的只言片语终于有了方向。你在地图边缘圈下一片区域：据点线索 ${clueAfter}/2。再找到一条能互相印证的消息，就能锁定那个地方。`);
+      stories.push(`门外的话只够画出一个模糊的方向。你在地图边缘留下一道记号：据点线索 ${clueAfter}/2。再听到一条相同的消息，那个地方就会现身。`);
     }
   }
   const trustBefore=start.campTrust||0,trustAfter=game.campTrust||0;
   if(trustAfter>trustBefore){
     if(trustAfter>=2){
-      stories.push(`据点的位置早已确定，而今晚这次接触让关系从“${campRelationLabel(trustBefore)}”推进到“${campRelationLabel(trustAfter)}”。他们不再把你当路过的陌生人——据点路线已经达到接纳门槛。`);
+      stories.push('守门人这次没有挡住门：“进来吧，今晚给你留位置。”据点终于愿意接纳你。');
     }else{
-      stories.push(`据点的位置已经找到了；今晚的交谈又让其中一个人记住了你。关系从“${campRelationLabel(trustBefore)}”推进到“${campRelationLabel(trustAfter)}”。下一步，是再建立一点信任，让他们真正接纳你。`);
+      stories.push('守门人终于认出了你：“我记得你。下次来，带点消息。”你不再只是门外的陌生人。');
     }
   }
   const beforeItems=combinedItemCounts(start),afterItems=combinedItemCounts(game);
@@ -2106,24 +2199,36 @@ function nightOutcomeStory(start){
   if(gotMap||gotKey){
     const found=[gotMap?'撤离路线图':'',gotKey?'陌生车钥匙':''].filter(Boolean).join('和');
     const route=finalRouteStatus();
-    if(route.escapeReady)stories.push(`你把今晚找到的${found}摊在灯下，终于拼出了一条完整的离城办法。撤离路线已经成形；等真正的终局到来，你有路可走了。`);
-    else stories.push(`你把今晚找到的${found}收好。它让撤离路线第一次有了具体形状，但还不是出口：下一步还缺${route.escapeMissing[0]||'最后一块关键线索'}。`);
+    if(route.escapeReady)stories.push(`你把${found}摊在灯下，终于在地图上划出一条完整的离城路线。`);
+    else stories.push(`你把${found}收好。离城的路有了轮廓，可还缺${route.escapeMissing[0]||'最后一块关键线索'}。`);
   }
   const imminent=(game.crisisPlan||[]).find(c=>c.day===game.day+1&&!(game.resolvedCrises||[]).includes(c.day));
   if(imminent){
     const advice=crisisLastChanceAdvice(imminent);
-    stories.push(advice.ready?`天亮时，${advice.label}就会真正压下来。你现有的${advice.need}能先保命；至于要付多少代价，得看住所和身体还能不能一起撑住。`:`天亮时，${advice.label}就会真正压下来。你在入夜前仍缺${advice.need}——下一关可能致命。`);
+    stories.push(advice.ready?`天亮时，${advice.label}就会真正压下来。好在你已经把${advice.need}留在了手边。`:`天亮时，${advice.label}就会真正压下来。屋里仍缺${advice.need}——这可能是你最后一个夜晚。`);
   }
-  return stories.length?stories.join('<br><br>'):'先把这一晚发生了什么看清楚。点「知道了」以后才会进入第二天。';
+  return stories.length?stories.slice(0,3).join('<br><br>'):'风在门外绕了一圈，最后什么也没带进来。无事发生，今晚反而算好消息。';
+}
+function nightOutcomeHeadline(start){
+  const clue=(game.shelterClues||0)>(start.shelterClues||0),trust=(game.campTrust||0)>(start.campTrust||0);
+  const before=combinedItemCounts(start),after=combinedItemCounts(game);
+  if(clue)return game.campUnlocked?'地图上的问号有了名字':'门外的人留下了一句方向';
+  if(trust)return '据点的人记住了你';
+  if((after.routeMap||0)>(before.routeMap||0)||(after.carKey||0)>(before.carKey||0))return '离开的路又完整了一点';
+  if(nightResourceUses.length)return '你用存下的东西撑过了今晚';
+  const imminent=(game.crisisPlan||[]).find(c=>c.day===game.day+1&&!(game.resolvedCrises||[]).includes(c.day));
+  if(imminent)return `${crisisLastChanceAdvice(imminent).label}就在天亮以后`;
+  return '夜终于安静下来';
 }
 function showNightOutcome(){
   const start=nightStartSnapshot||nightSnapshot(); const out=nightOutcomeFrom(start);
   const buffHtml=out.buffs.length?out.buffs.map(x=>`<small>✓ ${x}</small>`).join(''):'<small>今晚没有额外增益。</small>';
   const debuffHtml=out.debuffs.length?out.debuffs.map(x=>`<small>• ${x}</small>`).join(''):'<small>今晚没有额外损失。</small>';
-  const rescueHtml=nightResourceUses.length?`<div class="survivalUse"><strong>🛟 今晚用掉的物资</strong>${nightResourceUses.map(x=>`<small>✓ ${x}</small>`).join('')}</div>`:'';
+  const rescueHtml=nightResourceUses.length?`<div class="survivalUse"><strong>今晚，你动用了</strong>${nightResourceUses.map(x=>`<small>✓ ${x}</small>`).join('')}</div>`:'';
   const storyHtml=nightOutcomeStory(start);
   const c=document.getElementById('modalCard');
-  c.innerHTML=`<div class="eventMeta">DAY ${game.day} · 夜间结算</div><div class="modalIcon">🌙</div><h2>今晚结算完成</h2><div class="eventBody"><p>${storyHtml}</p>${rescueHtml}<div class="nightOutcomeGrid"><div class="nightOutcomeCol buff"><strong>✨ BUFF / 收获</strong>${buffHtml}</div><div class="nightOutcomeCol debuff"><strong>⚠️ DEBUFF / 代价</strong>${debuffHtml}</div></div></div><div class="choiceList"><button type="button" class="choice" id="nightOutcomeAck">知道了 → 天亮</button></div>`;
+  c.className='modalCard nightResultCard';
+  c.innerHTML=`<div class="eventMeta">DAY ${game.day} · 夜间结算</div><div class="modalIcon">🌙</div><h2>${nightOutcomeHeadline(start)}</h2><div class="nightStory">${storyHtml}</div>${rescueHtml}<div class="nightOutcomeGrid"><div class="nightOutcomeCol buff"><strong>今晚获得</strong>${buffHtml}</div><div class="nightOutcomeCol debuff"><strong>今晚付出</strong>${debuffHtml}</div></div><div class="choiceList"><button type="button" class="choice primary" id="nightOutcomeAck">知道了，天亮再走</button></div>`;
   document.getElementById('nightOutcomeAck').onclick=completeNightEvent;
   showModal();
 }
@@ -2234,6 +2339,7 @@ function eventTypeFor(title,explicit=''){
 }
 function openEvent(icon,title,text,choices,eventType=''){
   const c=document.getElementById('modalCard');
+  c.className='modalCard eventModalCard';
   const meta=game&&game.started?`<div class="eventMeta">DAY ${game.day} · ${eventTypeFor(title,eventType)}</div>`:'';
   c.innerHTML=`${meta}<div class="modalIcon">${icon}</div><h2>${title}</h2><div class="eventBody">${text}</div><div class="choiceList">${choices.map((x,i)=>`<button type="button" class="choice" data-choice="${i}">${x.text}${x.desc?`<small>${x.desc}</small>`:''}</button>`).join('')}</div>`;
   c.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>choices[+b.dataset.choice].fn());
@@ -2417,6 +2523,30 @@ function checkEnding(){
 function isSurvivalCause(cause){
   return /正式通关|十日存活|稳定生存|找到撤离路线|建立临时社区|稳定活鸡|仍然健在|找到新的落脚点|猫仍然自由|继续迁移|继续扩张/.test(String(cause||''));
 }
+function deathHeadline(cause,title=''){
+  const c=`${cause||''} ${title||''}`;
+  if(/踩踏|踩死|鞋底/.test(c))return '葬身鞋底';
+  if(/极端低温|低温|冻/.test(c))return '冷死了';
+  if(/脱水|缺水|断水/.test(c))return '渴死了';
+  if(/避难所食物短缺|当作食物|幸存者抓住|今晚加餐/.test(c))return '成了晚餐';
+  if(/饥饿|体力衰竭/.test(c))return '饿死了';
+  if(/浓烟|火灾|烟火/.test(c))return '没逃出黑烟';
+  if(/野狗|捕食/.test(c))return '被叼走了';
+  if(/鸡啄/.test(c))return '被啄死了';
+  if(/杀虫剂|中毒/.test(c))return '中毒身亡';
+  if(/骚乱|冲突|抓捕/.test(c))return '没逃出来';
+  if(/重伤|外伤|伤势|深层|坍塌|事故/.test(c))return '伤得太重';
+  return title&&!/到此为止|没能撑过|结局/.test(title)?title:'你死了';
+}
+function endingSecondaryLine(info,cause){
+  if(!info||!info.isDeath)return isSurvivalCause(cause)?'你替自己找到了一条还能继续走下去的路。':String(cause||'这一局暂时告一段落。');
+  const missing=(info.missing||[]).filter(Boolean).slice(0,2);
+  if(missing.length){
+    const choiceLike=missing.every(x=>/撤离|躲|避开|判断|路线|见好就收|不要|更早/.test(x));
+    return choiceLike?`最后没能做到：${missing.join('、')}`:`最后缺少：${missing.join('、')}`;
+  }
+  return `直接原因：${info.direct||cause||'致命事件'}`;
+}
 function inferDeathInfo(cause,quote){
   if(isSurvivalCause(cause))return null;
   const c=String(cause||'');
@@ -2441,18 +2571,24 @@ function finish(title,quote,cause,deathInfo=null){
   const info=deathInfo||inferDeathInfo(cause,quote);
   game.deathInfo=info;
   game.ending={title,quote:finalQuote,cause,day:game.day}; clearSave();
-  document.getElementById('endingTitle').textContent=title;
-  const report=[['身份',idData().label],['身份档案',game.identityCard?.title||'未命名'],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['通关状态',endingPassStatus(cause)],['最终路线',game.finalRoute==='escape'?'撤离城市':game.finalRoute==='hold'?'固守据点':game.finalRoute==='camp'?'幸存者据点':game.finalRoute==='none'?'未找到稳定出路':'非终局死亡'],['搜索次数',game.searches],['致命判断事件',game.dangerChoices||0],['贪心次数',game.greedySearches],['高级急救包救命',`${game.rescues||0} 次`],['最值钱的发现',game.bestLoot],['最终原因',cause]];
+  const isDeath=!!info?.isDeath,displayTitle=isDeath?deathHeadline(cause,title):title;
+  const endingCard=document.getElementById('endingCard');endingCard.classList.toggle('survived',!isDeath);
+  document.getElementById('endingMeta').textContent=`DAY ${game.day} · ${isDeath?'本局结束':'生存结局'}`;
+  document.getElementById('endingTitle').textContent=displayTitle;
+  document.getElementById('endingCause').textContent=endingSecondaryLine(info,cause);
+  const details=document.getElementById('endingDetails'),detailsBtn=document.getElementById('endingDetailsToggle');details.classList.remove('open');detailsBtn.classList.remove('open');detailsBtn.innerHTML='查看本局结算详情 <span>▾</span>';
+  const report=[['结局',title],['身份',idData().label],['身份档案',game.identityCard?.title||'未命名'],['天赋',traitData().label],['出生地',birthData().short],['末日类型',game.disaster],['生存时间',`${game.day} 天`],['通关状态',endingPassStatus(cause)],['最终路线',game.finalRoute==='escape'?'撤离城市':game.finalRoute==='hold'?'固守据点':game.finalRoute==='camp'?'幸存者据点':game.finalRoute==='none'?'未找到稳定出路':'非终局死亡'],['搜索次数',game.searches],['致命判断事件',game.dangerChoices||0],['贪心次数',game.greedySearches],['高级急救包救命',`${game.rescues||0} 次`],['最值钱的发现',game.bestLoot],['最终原因',cause]];
   document.getElementById('report').innerHTML=report.map(r=>`<div><span style="color:#776e5d">${r[0]}</span><br><strong>${r[1]}</strong></div>`).join('');
   renderDeathBreakdown(info);
-  document.getElementById('endingQuote').textContent='“'+finalQuote+'”';
+  document.getElementById('endingQuote').textContent=finalQuote;
   document.getElementById('achievementList').innerHTML=game.achievements.length?'<strong>本局成就：</strong><br>'+game.achievements.map(a=>`<span class="achievement">🏆 ${a.label}</span>`).join(''):'<span style="color:#766f61">本局没有解锁隐藏成就。至少你还有尊严。</span>';
   hideModal();showScreen('ending');
 }
 
 function copyReport(){
   const why=game.deathInfo?.isDeath?`\n死因：${game.deathInfo.direct}\n关键缺口：${(game.deathInfo.missing||[]).join('、')||'无单一缺口'}`:'';
-  const text=`《末日转盘 V${VERSION}》\n身份：${idData().short}\n身份档案：${(game.identityCard||makeIdentityCard())?.title||'未命名'}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${game.ending.title}
+  const shownTitle=game.deathInfo?.isDeath?deathHeadline(game.ending.cause,game.ending.title):game.ending.title;
+  const text=`《末日转盘 V${VERSION}》\n身份：${idData().short}\n身份档案：${(game.identityCard||makeIdentityCard())?.title||'未命名'}\n天赋：${traitData().short}\n出生地：${birthData().short}\n生存：${game.day}天\n结局：${shownTitle}
 通关状态：${endingPassStatus(game.ending.cause)}${why}\n${game.ending.quote}`;
   copyText(text);
 }
@@ -2463,6 +2599,7 @@ function debug(){
   const data=game||{note:'当前没有进行中的游戏'};
   const text=JSON.stringify(data,null,2);
   const c=document.getElementById('modalCard');
+  c.className='modalCard';
   c.innerHTML=`<h2>🪲 调试状态</h2><p>以后你发现 Bug，不用看代码。直接复制下面这坨状态，再告诉我“我刚刚做了什么、我以为会怎样、实际怎样”。</p><div class="debugBox">${escapeHtml(text)}</div><div class="choiceList"><button type="button" class="choice" id="copyDebug">复制调试信息</button><button type="button" class="choice" id="closeDebugBtn">关掉</button></div>`;
   document.getElementById('copyDebug').addEventListener('click',function(){copyText(text);});
   document.getElementById('closeDebugBtn').addEventListener('click',hideModal);
@@ -2493,6 +2630,10 @@ function bindUI(){
   document.getElementById('endDayBtn').addEventListener('click',endDay);
   document.getElementById('againBtn').addEventListener('click',newGame);
   document.getElementById('copyReportBtn').addEventListener('click',copyReport);
+  document.getElementById('endingDetailsToggle').addEventListener('click',function(){
+    const details=document.getElementById('endingDetails'),open=details.classList.toggle('open');
+    this.classList.toggle('open',open);this.innerHTML=`${open?'收起':'查看'}本局结算详情 <span>▾</span>`;
+  });
   document.getElementById('debugTop').addEventListener('click',debug);
   document.getElementById('resetTop').addEventListener('click',resetAll);
   document.querySelectorAll('.utilityBtn').forEach(function(b){b.addEventListener('click',function(){toggleUtility(b.getAttribute('data-utility'));});});
